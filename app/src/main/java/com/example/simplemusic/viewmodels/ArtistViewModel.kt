@@ -18,6 +18,6 @@ class ArtistViewModel : ViewModel() {
     */
 
     suspend fun searchArtist(term: String, limit: Int) {
-        artists.value = artistRepository.getArtists(term, 20)
+        artists.value = artistRepository.getArtists(term, limit)
     }
 }

@@ -10,4 +10,8 @@ class ArtistAlbum: MultimediaContent() {
     @Expose
     var collectionName: String? = null
 
+    @SerializedName("collectionId")
+    @Expose
+    var collectionId: Int? = null
+
 }

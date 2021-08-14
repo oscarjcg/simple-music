@@ -1,5 +1,6 @@
 package com.example.simplemusic.utils.json
 
+import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.models.multimediacontent.MultimediaContent
@@ -10,6 +11,7 @@ private const val WRAPPER_TYPE = "wrapperType"
 private const val WRAPPER_TYPE_UNKNOWN= "unknown"
 private const val WRAPPER_TYPE_ARTIST = "artist"
 private const val WRAPPER_TYPE_COLLECTION = "collection"
+private const val WRAPPER_TYPE_TRACK = "track"
 
 class MultimediaContentJsonAdapter : JsonDeserializer<MultimediaContent>,
     JsonSerializer<MultimediaContent> {
@@ -30,6 +32,7 @@ class MultimediaContentJsonAdapter : JsonDeserializer<MultimediaContent>,
             return when (wrapperType) {
                 WRAPPER_TYPE_ARTIST -> Gson().fromJson(json, Artist::class.java)
                 WRAPPER_TYPE_COLLECTION -> Gson().fromJson(json, ArtistAlbum::class.java)
+                WRAPPER_TYPE_TRACK -> Gson().fromJson(json, AlbumSong::class.java)
                 else -> multimediaContent
             }
         }

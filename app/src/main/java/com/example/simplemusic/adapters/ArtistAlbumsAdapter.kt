@@ -8,6 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
+import com.example.simplemusic.fragments.ArtistAlbumsFragmentDirections
 import com.example.simplemusic.fragments.SearchArtistFragmentDirections
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
@@ -30,7 +31,8 @@ class ArtistAlbumsAdapter(private  val albums: List<ArtistAlbum>,
         holder.name.text = album.collectionName
 
         holder.container.setOnClickListener {
-
+            val action =  ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToAlbumSongsFragment(album.collectionId!!)
+            navController.navigate(action)
         }
     }
 
