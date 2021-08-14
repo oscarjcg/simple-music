@@ -5,22 +5,33 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
-
-
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+import com.example.simplemusic.adapters.ArtistAlbumsAdapter
+import com.example.simplemusic.viewmodels.AlbumViewModel
+import kotlinx.coroutines.launch
 
 
 class ArtistAlbumsFragment : Fragment() {
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private lateinit var albumRv: RecyclerView
+    private lateinit var albumsAdapter: ArtistAlbumsAdapter
+
+    private val args: ArtistAlbumsFragmentArgs by navArgs()
+    private val albumViewModel: AlbumViewModel by activityViewModels()
+    private lateinit var navController: NavController
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
         }
     }
 
@@ -29,17 +40,45 @@ class ArtistAlbumsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_artist_albums, container, false)
+        val view = inflater.inflate(R.layout.fragment_artist_albums, container, false)
+        initView(view)
+
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Navigation
+        navController = findNavController()
+
+        // Observe when albums ready
+        albumViewModel.albums.observe(viewLifecycleOwner, { albums ->
+            albumsAdapter = ArtistAlbumsAdapter(albums, navController)
+            albumRv.adapter = albumsAdapter
+        })
+
+        // Start fetching albums
+        lifecycleScope.launch {
+            albumViewModel.searchArtistAlbum(args.artitstId,20)
+        }
+
+        // Init album list empty
+        albumsAdapter = ArtistAlbumsAdapter(ArrayList(), navController)
+        albumRv.layoutManager = LinearLayoutManager(activity)
+        albumRv.adapter = albumsAdapter
+    }
+
+    private fun initView(view: View) {
+        albumRv = view.findViewById(R.id.albumRv)
     }
 
     companion object {
 
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance() =
             ArtistAlbumsFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
                 }
             }
     }

@@ -10,32 +10,32 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.fragments.SearchArtistFragmentDirections
 import com.example.simplemusic.models.multimediacontent.Artist
+import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 
-class ArtistAdapter(private  val artists: List<Artist>,
-                    private val navController: NavController) : RecyclerView.Adapter<ArtistAdapter.ViewHolder>() {
-
+class ArtistAlbumsAdapter(private  val albums: List<ArtistAlbum>,
+                          private val navController: NavController) : RecyclerView.Adapter<ArtistAlbumsAdapter.ViewHolder>() {
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.nameTv)
         val container: ConstraintLayout = view.findViewById(R.id.container)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.artist_viewholder, parent, false)
-        return ViewHolder(view)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.album_viewholder, parent, false)
+        return ArtistAlbumsAdapter.ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val artist = artists[position]
+        val album = albums[position]
 
-        holder.name.text = artist.artistName
+        holder.name.text = album.collectionName
 
         holder.container.setOnClickListener {
-            val action =  SearchArtistFragmentDirections.actionSearchArtistFragmentToArtistAlbumsFragment(artist.artistId!!)
-            navController.navigate(action)
+
         }
     }
 
     override fun getItemCount(): Int {
-        return artists.size
+        return albums.size
     }
+
 }

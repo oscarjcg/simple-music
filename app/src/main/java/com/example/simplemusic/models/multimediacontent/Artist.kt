@@ -1,12 +1,10 @@
-package com.example.simplemusic.models
+package com.example.simplemusic.models.multimediacontent
 
+import com.example.simplemusic.models.multimediacontent.MultimediaContent
 import com.google.gson.annotations.SerializedName
 import com.google.gson.annotations.Expose
 
-class Artist {
-    @SerializedName("wrapperType")
-    @Expose
-    var wrapperType: String? = null
+class Artist : MultimediaContent() {
 
     @SerializedName("artistType")
     @Expose

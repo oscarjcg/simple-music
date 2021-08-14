@@ -2,10 +2,8 @@ package com.example.simplemusic.viewmodels
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.simplemusic.models.Artist
+import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.repositories.ArtistRepository
-import kotlinx.coroutines.launch
 
 class ArtistViewModel : ViewModel() {
     val artists = MutableLiveData<List<Artist>>()

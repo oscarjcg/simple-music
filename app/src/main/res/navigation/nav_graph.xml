@@ -18,5 +18,9 @@
         android:id="@+id/artistAlbumsFragment"
         android:name="com.example.simplemusic.fragments.ArtistAlbumsFragment"
         android:label="fragment_artist_albums"
-        tools:layout="@layout/fragment_artist_albums" />
+        tools:layout="@layout/fragment_artist_albums" >
+        <argument
+            android:name="artitstId"
+            app:argType="integer" />
+    </fragment>
 </navigation>
