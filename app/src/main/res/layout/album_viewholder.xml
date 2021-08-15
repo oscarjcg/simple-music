@@ -29,13 +29,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Album"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textSize="24sp"/>
 
         <TextView
             android:id="@+id/dateTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Date" />
+            android:text="Date"
+            android:textSize="16sp"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

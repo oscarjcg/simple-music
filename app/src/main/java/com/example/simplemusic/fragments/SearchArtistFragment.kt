@@ -1,14 +1,12 @@
 package com.example.simplemusic.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
-import android.widget.EditText
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -23,18 +21,33 @@ import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.ArtistAdapter
 import com.example.simplemusic.viewmodels.ArtistViewModel
 import kotlinx.coroutines.launch
+import android.os.Parcelable
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
+import com.example.simplemusic.models.multimediacontent.Artist
+import com.example.simplemusic.utils.Connectivity
+import com.example.simplemusic.viewmodels.AlbumViewModel
+
 
 private const val SEARCH_DEFAULT = "a"
-private const val SEARCH_DEFAULT_SIZE = 20
+private const val SEARCH_PAGINATION = 20
 
-class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener {
+class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistAdapter.ActionInterface {
 
     private lateinit var artistRv: RecyclerView
     private lateinit var artistAdapter: ArtistAdapter
     private lateinit var toolbar: Toolbar
+    private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var progressBar: ProgressBar
+    private lateinit var stateTv: TextView
 
     private val artistViewModel: ArtistViewModel by activityViewModels()
+    private val albumViewModel: AlbumViewModel by activityViewModels()
     private lateinit var navController: NavController
+    // List scroll
+    private var recyclerViewState: Parcelable? = null
+    private var pagination = SEARCH_PAGINATION
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,24 +78,56 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener {
 
         // Observe artists
         artistViewModel.artists.observe(viewLifecycleOwner, { artists ->
-            //Toast.makeText(this, artists.size.toString(), Toast.LENGTH_SHORT).show()
-            artistAdapter = ArtistAdapter(artists, navController)
-            artistRv.adapter = artistAdapter
+            // Request indicators off
+            progressBar.visibility = View.GONE
+            artistViewModel.searchingArtist = false
+            stateTv.visibility = View.GONE
+
+            // Update artists data
+            artistAdapter.setArtists(artists)
+
+            // Restore list scroll
+            artistRv.layoutManager?.onRestoreInstanceState(recyclerViewState);
+
+            Log.println(Log.ERROR, "DEBUG", "request $pagination")//
         })
 
         // Init artist list empty
-        artistAdapter = ArtistAdapter(ArrayList(), navController)
-        artistRv.layoutManager = LinearLayoutManager(context)
+        artistAdapter = ArtistAdapter(ArrayList(), this)
+        linearLayoutManager = LinearLayoutManager(context)
+        artistRv.layoutManager = linearLayoutManager
         artistRv.adapter = artistAdapter
+
+        // Listener. At end of list request more artist data
+        artistRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (!recyclerView.canScrollVertically(1)) {
+                    if (!artistViewModel.searchingArtist) {
+                        // Save list scroll data
+                        recyclerViewState = (artistRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
+
+                        // Request more artists data
+                        pagination += SEARCH_PAGINATION
+                        artistViewModel.searchedArtist?.let { requestSearch(it, pagination) }
+                    }
+                }
+            }
+        })
 
         // Default search when no text
         if (artistViewModel.searchedArtist == null)
-            defaultSearch()
+            requestSearch(SEARCH_DEFAULT, pagination)
     }
 
     private fun initView(view: View) {
         artistRv = view.findViewById(R.id.artistRv)
         toolbar = view.findViewById(R.id.toolbar)
+        progressBar = view.findViewById(R.id.progressBar)
+        stateTv = view.findViewById(R.id.stateTv)
+
+        progressBar.visibility = View.GONE
+        stateTv.visibility = View.GONE
     }
 
     private fun setToolbar() {
@@ -110,10 +155,21 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    private fun defaultSearch() {
-        // Default search
-        lifecycleScope.launch {
-            artistViewModel.searchArtist(SEARCH_DEFAULT, SEARCH_DEFAULT_SIZE)
+    private fun requestSearch(search: String, pagination: Int) {
+        if (context?.let { Connectivity.isOnline(it) } == true) {
+            progressBar.visibility = View.VISIBLE
+
+            lifecycleScope.launch {
+                artistViewModel.searchArtist(search, pagination)
+            }
+        } else {
+            // If no internet and no artist data, show at least info
+            if (artistViewModel.artists.value == null) {
+                stateTv.text = getText(R.string.no_results)
+                stateTv.visibility = View.VISIBLE
+            }
+
+            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -123,17 +179,22 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener {
 
     override fun onQueryTextChange(newText: String?): Boolean {
         if (newText != null) {
+            pagination = SEARCH_PAGINATION
             if (newText.isEmpty()) {
                 // Default search when no text
-                defaultSearch()
+                requestSearch(SEARCH_DEFAULT, pagination)
             } else {
-                lifecycleScope.launch {
-                    artistViewModel.searchArtist(newText, 20)
-                }
+                requestSearch(newText, pagination)
             }
         }
 
         return true
+    }
+
+    override fun onClickArtist(artist: Artist) {
+        albumViewModel.searchedArtist = artist.artistName
+        val action =  SearchArtistFragmentDirections.actionSearchArtistFragmentToArtistAlbumsFragment(artist.artistId!!)
+        navController.navigate(action)
     }
 
     companion object {

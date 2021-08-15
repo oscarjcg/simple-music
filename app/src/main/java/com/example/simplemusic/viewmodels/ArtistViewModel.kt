@@ -9,18 +9,13 @@ class ArtistViewModel : ViewModel() {
     val artists = MutableLiveData<List<Artist>>()
     private val artistRepository = ArtistRepository()
 
+    // UI
     var searchedArtist: String? = null
-
-    /*
-    init {
-        viewModelScope.launch {
-            artists.value = artistRepository.getArtists("jack+johnson", 20)
-        }
-    }
-    */
+    var searchingArtist: Boolean = false
 
     suspend fun searchArtist(term: String, limit: Int) {
         searchedArtist = term
+        searchingArtist = true
         artists.value = artistRepository.getArtists(term, limit)
     }
 }

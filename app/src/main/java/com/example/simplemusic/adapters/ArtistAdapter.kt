@@ -5,14 +5,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
-import com.example.simplemusic.fragments.SearchArtistFragmentDirections
 import com.example.simplemusic.models.multimediacontent.Artist
 
-class ArtistAdapter(private  val artists: List<Artist>,
-                    private val navController: NavController) : RecyclerView.Adapter<ArtistAdapter.ViewHolder>() {
+class ArtistAdapter(private var artists: List<Artist>,
+                    private val actionInterface: ActionInterface) : RecyclerView.Adapter<ArtistAdapter.ViewHolder>() {
+
+    interface ActionInterface {
+        fun onClickArtist(artist: Artist)
+    }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.nameTv)
@@ -32,12 +34,16 @@ class ArtistAdapter(private  val artists: List<Artist>,
         holder.genre.text = artist.primaryGenreName
 
         holder.container.setOnClickListener {
-            val action =  SearchArtistFragmentDirections.actionSearchArtistFragmentToArtistAlbumsFragment(artist.artistId!!)
-            navController.navigate(action)
+            actionInterface.onClickArtist(artist)
         }
     }
 
     override fun getItemCount(): Int {
         return artists.size
+    }
+
+    fun setArtists(artists: List<Artist>) {
+        this.artists = artists
+        notifyDataSetChanged()
     }
 }

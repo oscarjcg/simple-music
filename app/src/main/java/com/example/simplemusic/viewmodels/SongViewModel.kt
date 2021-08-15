@@ -10,7 +10,12 @@ class SongViewModel : ViewModel() {
     val songs = MutableLiveData<List<AlbumSong>>()
     private val songRepository = SongRepository()
 
+    // UI
+    var selectedAlbum: String? = null
+    var searchingSongs: Boolean = false
+
     suspend fun searchAlbumSongs(albumId: Int, limit: Int) {
+        searchingSongs = true
         songs.value = songRepository.getAlbumSongs(albumId, limit)
     }
 }

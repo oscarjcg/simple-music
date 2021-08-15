@@ -11,14 +11,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.simplemusic.R
 import com.example.simplemusic.fragments.ArtistAlbumsFragmentDirections
+import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import java.text.SimpleDateFormat
 import java.util.*
 
 private const val RELEASE_DATE_FORMAT = "yyyy"
 
-class ArtistAlbumsAdapter(private  val albums: List<ArtistAlbum>,
-                          private val navController: NavController) : RecyclerView.Adapter<ArtistAlbumsAdapter.ViewHolder>() {
+class ArtistAlbumsAdapter(private var albums: List<ArtistAlbum>,
+                          private val actionInterface: ActionInterface) : RecyclerView.Adapter<ArtistAlbumsAdapter.ViewHolder>() {
+
+    interface ActionInterface {
+        fun onClickAlbum(album: ArtistAlbum)
+    }
+
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nameTv: TextView = view.findViewById(R.id.nameTv)
         val container: ConstraintLayout = view.findViewById(R.id.container)
@@ -49,13 +55,17 @@ class ArtistAlbumsAdapter(private  val albums: List<ArtistAlbum>,
 
         // Go to album songs
         holder.container.setOnClickListener {
-            val action =  ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToAlbumSongsFragment(album.collectionId!!)
-            navController.navigate(action)
+            actionInterface.onClickAlbum(album)
         }
     }
 
     override fun getItemCount(): Int {
         return albums.size
+    }
+
+    fun setAlbums( albums: List<ArtistAlbum>) {
+        this.albums = albums
+        notifyDataSetChanged()
     }
 
 }

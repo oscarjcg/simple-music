@@ -10,8 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 
-class AlbumSongsAdapter(private  val songs: List<AlbumSong>,
-                        private val navController: NavController) : RecyclerView.Adapter<AlbumSongsAdapter.ViewHolder>() {
+class AlbumSongsAdapter(private  var songs: List<AlbumSong>) : RecyclerView.Adapter<AlbumSongsAdapter.ViewHolder>() {
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.nameTv)
         val container: ConstraintLayout = view.findViewById(R.id.container)
@@ -34,6 +33,11 @@ class AlbumSongsAdapter(private  val songs: List<AlbumSong>,
 
     override fun getItemCount(): Int {
         return songs.size
+    }
+
+    fun setSongs(songs: List<AlbumSong>) {
+        this.songs = songs
+        notifyDataSetChanged()
     }
 
 }

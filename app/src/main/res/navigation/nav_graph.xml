@@ -8,7 +8,6 @@
     <fragment
         android:id="@+id/searchArtistFragment"
         android:name="com.example.simplemusic.fragments.SearchArtistFragment"
-
         tools:layout="@layout/fragment_search_artist">
         <action
             android:id="@+id/action_searchArtistFragment_to_artistAlbumsFragment"
@@ -17,7 +16,6 @@
     <fragment
         android:id="@+id/artistAlbumsFragment"
         android:name="com.example.simplemusic.fragments.ArtistAlbumsFragment"
-        android:label="Albums"
         tools:layout="@layout/fragment_artist_albums">
         <argument
             android:name="artitstId"
@@ -29,7 +27,6 @@
     <fragment
         android:id="@+id/albumSongsFragment"
         android:name="com.example.simplemusic.fragments.AlbumSongsFragment"
-        android:label="Songs"
         tools:layout="@layout/fragment_album_songs">
         <argument
             android:name="albumId"

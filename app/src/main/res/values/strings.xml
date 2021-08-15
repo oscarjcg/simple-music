@@ -2,4 +2,7 @@
     <string name="app_name">Simple Music</string>
     <string name="search_text">Search…</string>
 
+    <string name="no_internet">No internet</string>
+    <string name="no_results">No results</string>
+
 </resources>
