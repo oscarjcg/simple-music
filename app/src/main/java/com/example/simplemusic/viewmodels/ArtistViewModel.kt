@@ -9,6 +9,8 @@ class ArtistViewModel : ViewModel() {
     val artists = MutableLiveData<List<Artist>>()
     private val artistRepository = ArtistRepository()
 
+    var searchedArtist: String? = null
+
     /*
     init {
         viewModelScope.launch {
@@ -18,6 +20,7 @@ class ArtistViewModel : ViewModel() {
     */
 
     suspend fun searchArtist(term: String, limit: Int) {
+        searchedArtist = term
         artists.value = artistRepository.getArtists(term, limit)
     }
 }

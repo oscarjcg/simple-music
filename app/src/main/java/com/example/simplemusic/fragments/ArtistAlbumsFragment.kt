@@ -6,14 +6,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
+import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.ArtistAlbumsAdapter
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import kotlinx.coroutines.launch
@@ -23,6 +29,8 @@ class ArtistAlbumsFragment : Fragment() {
 
     private lateinit var albumRv: RecyclerView
     private lateinit var albumsAdapter: ArtistAlbumsAdapter
+    private lateinit var toolbar: Toolbar
+
 
     private val args: ArtistAlbumsFragmentArgs by navArgs()
     private val albumViewModel: AlbumViewModel by activityViewModels()
@@ -52,6 +60,9 @@ class ArtistAlbumsFragment : Fragment() {
         // Navigation
         navController = findNavController()
 
+        // Toolbar
+        setToolbar()
+
         // Observe when albums ready
         albumViewModel.albums.observe(viewLifecycleOwner, { albums ->
             albumsAdapter = ArtistAlbumsAdapter(albums, navController)
@@ -71,6 +82,13 @@ class ArtistAlbumsFragment : Fragment() {
 
     private fun initView(view: View) {
         albumRv = view.findViewById(R.id.albumRv)
+        toolbar = view.findViewById(R.id.toolbar)
+    }
+
+    private fun setToolbar() {
+        // Toolbar
+        val navHostFragment = NavHostFragment.findNavController(this)
+        toolbar.setupWithNavController( navHostFragment)
     }
 
     companion object {

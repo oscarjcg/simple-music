@@ -8,9 +8,10 @@
         <entry key="app/src/main/res/layout/album_viewholder.xml" value="0.286231884057971" />
         <entry key="app/src/main/res/layout/artist_viewholder.xml" value="0.30344202898550726" />
         <entry key="app/src/main/res/layout/fragment_album_songs.xml" value="0.365036231884058" />
-        <entry key="app/src/main/res/layout/fragment_artist_albums.xml" value="0.15960616356324114" />
+        <entry key="app/src/main/res/layout/fragment_artist_albums.xml" value="0.26943926500169885" />
         <entry key="app/src/main/res/layout/fragment_search_artist.xml" value="0.322463768115942" />
         <entry key="app/src/main/res/layout/song_viewholder.xml" value="0.365036231884058" />
+        <entry key="app/src/main/res/menu/menu.xml" value="0.17447916666666666" />
       </map>
     </option>
   </component>

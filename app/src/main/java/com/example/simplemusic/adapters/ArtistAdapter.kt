@@ -16,6 +16,7 @@ class ArtistAdapter(private  val artists: List<Artist>,
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.nameTv)
+        val genre: TextView = view.findViewById(R.id.genreTv)
         val container: ConstraintLayout = view.findViewById(R.id.container)
     }
 
@@ -28,6 +29,7 @@ class ArtistAdapter(private  val artists: List<Artist>,
         val artist = artists[position]
 
         holder.name.text = artist.artistName
+        holder.genre.text = artist.primaryGenreName
 
         holder.container.setOnClickListener {
             val action =  SearchArtistFragmentDirections.actionSearchArtistFragmentToArtistAlbumsFragment(artist.artistId!!)
