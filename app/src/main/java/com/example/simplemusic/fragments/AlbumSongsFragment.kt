@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
+import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.AlbumSongsAdapter
 import com.example.simplemusic.adapters.ArtistAlbumsAdapter
 import com.example.simplemusic.models.multimediacontent.AlbumSong
@@ -90,7 +91,7 @@ class AlbumSongsFragment : Fragment() {
         })
 
         // Init songs list empty
-        songsAdapter = AlbumSongsAdapter(ArrayList())
+        songsAdapter = AlbumSongsAdapter(ArrayList(), activity as MainActivity)
         gridLayoutManager = GridLayoutManager(activity, 2)
         songRv.layoutManager = gridLayoutManager
         songRv.adapter = songsAdapter

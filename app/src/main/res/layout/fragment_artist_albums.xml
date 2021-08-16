@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/ContainerContent"
     tools:context=".fragments.ArtistAlbumsFragment">
 
     <androidx.appcompat.widget.Toolbar
@@ -43,6 +44,7 @@
         android:layout_height="wrap_content"
         android:text="State"
         android:textSize="34sp"
+        style="@style/TextAccent"
         app:layout_constraintBottom_toBottomOf="@+id/albumRv"
         app:layout_constraintEnd_toEndOf="@+id/albumRv"
         app:layout_constraintStart_toStartOf="@+id/albumRv"
