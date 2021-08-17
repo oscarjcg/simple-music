@@ -100,7 +100,10 @@ class AlbumSongsFragment : Fragment() {
         songRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                if (!recyclerView.canScrollVertically(1)) {
+
+                val size = songViewModel.songs.value?.size ?: Int.MAX_VALUE
+                // If end of list and there is data to continue
+                if (!recyclerView.canScrollVertically(1) && pagination <= size) {
                     if (!songViewModel.searchingSongs) {
                         // Save list scroll data
                         recyclerViewState = (songRv.layoutManager as GridLayoutManager).onSaveInstanceState()

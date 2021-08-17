@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Simple Music</string>
-    <string name="search_text">Buscar…</string>
+    <string name="search_text">Buscar artista…</string>
     <string name="no_internet">Sin conexión a Internet</string>
     <string name="no_results">Sin resultados</string>
 </resources>

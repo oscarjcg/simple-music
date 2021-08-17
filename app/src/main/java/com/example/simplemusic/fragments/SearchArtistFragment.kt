@@ -1,5 +1,7 @@
 package com.example.simplemusic.fragments
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -22,9 +24,13 @@ import com.example.simplemusic.adapters.ArtistAdapter
 import com.example.simplemusic.viewmodels.ArtistViewModel
 import kotlinx.coroutines.launch
 import android.os.Parcelable
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.text.TextWatcher
+import android.transition.TransitionManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.*
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.widget.doAfterTextChanged
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
@@ -41,13 +47,20 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
     private lateinit var linearLayoutManager: LinearLayoutManager
     private lateinit var progressBar: ProgressBar
     private lateinit var stateTv: TextView
+    private lateinit var container: ConstraintLayout
+    private lateinit var searchEt: EditText
+    private lateinit var searchBtn: ImageButton
+    private lateinit var clearBtn: ImageButton
 
     private val artistViewModel: ArtistViewModel by activityViewModels()
     private val albumViewModel: AlbumViewModel by activityViewModels()
     private lateinit var navController: NavController
-    // List scroll
-    private var recyclerViewState: Parcelable? = null
+
+
     private var pagination = SEARCH_PAGINATION
+
+    // Animation
+    private var anim = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,13 +96,33 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
             artistViewModel.searchingArtist = false
             stateTv.visibility = View.GONE
 
+            // Save list scroll data
+            val scroll = artistRv.layoutManager?.onSaveInstanceState()
+
             // Update artists data
             artistAdapter.setArtists(artists)
 
             // Restore list scroll
-            artistRv.layoutManager?.onRestoreInstanceState(recyclerViewState);
+            artistRv.layoutManager?.onRestoreInstanceState(scroll)
 
             Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+
+            // If there are results, the artist list will be at the center
+            if (artists.isEmpty()) {
+                // Trying to search something but no results
+                if (searchEt.text.isNotEmpty()) {
+                    stateTv.visibility = View.VISIBLE
+                    stateTv.text = getText(R.string.no_results)
+                }
+                // Move search bar down
+                searchBarCenter()
+
+            } else {
+                stateTv.visibility = View.GONE
+                // Move search bar up
+                searchBarTop()
+
+            }
         })
 
         // Init artist list empty
@@ -102,10 +135,13 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         artistRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                if (!recyclerView.canScrollVertically(1)) {
+
+                hideKeyboard()
+
+                val size = artistViewModel.artists.value?.size ?: Int.MAX_VALUE
+                // If end of list and there is data to continue
+                if (!recyclerView.canScrollVertically(1) && pagination <= size) {
                     if (!artistViewModel.searchingArtist) {
-                        // Save list scroll data
-                        recyclerViewState = (artistRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
 
                         // Request more artists data
                         pagination += SEARCH_PAGINATION
@@ -115,9 +151,32 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
             }
         })
 
-        // Default search when no text
-        if (artistViewModel.searchedArtist == null)
-            requestSearch(SEARCH_DEFAULT, pagination)
+        // Search after each letter
+        searchEt.doAfterTextChanged {
+            resetPagination()
+            requestSearch(searchEt.text.toString(), pagination)
+        }
+
+        // Search
+        searchBtn.setOnClickListener {
+            if (!anim) {
+                resetPagination()
+                hideKeyboard()
+                animateButtonPressed(searchBtn)
+                requestSearch(searchEt.text.toString(), pagination)
+            }
+        }
+
+        // Clear search
+        clearBtn.setOnClickListener {
+            if (!anim) {
+                resetPagination()
+                hideKeyboard()
+                animateButtonPressed(clearBtn)
+                searchEt.text.clear()
+            }
+        }
+
     }
 
     private fun initView(view: View) {
@@ -125,9 +184,27 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         toolbar = view.findViewById(R.id.toolbar)
         progressBar = view.findViewById(R.id.progressBar)
         stateTv = view.findViewById(R.id.stateTv)
+        container = view.findViewById(R.id.container)
+        searchBtn = view.findViewById(R.id.searchBtn)
+        searchEt = view.findViewById(R.id.searchEt)
+        clearBtn = view.findViewById(R.id.clearBtn)
 
         progressBar.visibility = View.GONE
         stateTv.visibility = View.GONE
+    }
+
+    fun Fragment.hideKeyboard() {
+        view?.let { activity?.hideKeyboard(it) }
+    }
+
+    fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    private fun resetPagination() {
+        artistRv.scrollToPosition(0);
+        pagination = SEARCH_PAGINATION
     }
 
     private fun setToolbar() {
@@ -137,8 +214,10 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         toolbar.setupWithNavController( navHostFragment, config)
 
         // Menu which contains a search view
+        /*
         setHasOptionsMenu(true)
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
+         */
         // Hide title
         (requireActivity() as MainActivity).title = ""
     }
@@ -173,10 +252,64 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         }
     }
 
+    /**
+     * Move search bar to the center by modifying constraint
+     */
+    private fun searchBarCenter() {
+        // Move search bar to center
+        TransitionManager.beginDelayedTransition(container)
+        val constraintSet = ConstraintSet()
+        constraintSet.clone(container)
+        constraintSet.connect(R.id.searchContainer, ConstraintSet.BOTTOM, R.id.container, ConstraintSet.BOTTOM)
+        container.setConstraintSet(constraintSet)
+    }
+
+    /**
+     * Move search bar to the top by modifying constraint
+     */
+    private fun searchBarTop() {
+        // Move search bar up
+        TransitionManager.beginDelayedTransition(container)
+        val constraintSet = ConstraintSet()
+        constraintSet.clone(container)
+        constraintSet.clear(R.id.searchContainer, ConstraintSet.BOTTOM)
+        container.setConstraintSet(constraintSet)
+    }
+
+    /**
+     * Animate button with zoom
+     */
+    private fun animateButtonPressed(view: View) {
+        anim = true
+        val zoom = 0.1f
+        val time: Long = 200
+
+        view.clearAnimation()
+        view.animate()
+            .scaleXBy(-zoom)
+            .scaleYBy(-zoom)
+            .setDuration(time)
+            .withEndAction {
+                view.animate()
+                    .scaleXBy(zoom)
+                    .scaleYBy(zoom)
+                    .setDuration(time)
+                    .withEndAction {
+                        anim = false
+                    }
+            }
+    }
+
+    /**
+     * Toolbar. Search after submit
+     */
     override fun onQueryTextSubmit(query: String?): Boolean {
         return true
     }
 
+    /**
+     * Toolbar. Search after each letter
+     */
     override fun onQueryTextChange(newText: String?): Boolean {
         if (newText != null) {
             pagination = SEARCH_PAGINATION
@@ -191,8 +324,14 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         return true
     }
 
+    /**
+     * Go to albums after an artist is selected
+     */
     override fun onClickArtist(artist: Artist) {
+        hideKeyboard()
+        // Pass artist name
         albumViewModel.searchedArtist = artist.artistName
+        // Go to albums
         val action =  SearchArtistFragmentDirections.actionSearchArtistFragmentToArtistAlbumsFragment(artist.artistId!!)
         navController.navigate(action)
     }
