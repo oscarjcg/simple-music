@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.repositories.AlbumRepository
 
+/**
+ * View model for albums.
+ */
 class AlbumViewModel : ViewModel() {
     val albums = MutableLiveData<List<ArtistAlbum>>()
     private val albumRepository = AlbumRepository()

@@ -18,6 +18,9 @@ import java.util.*
 
 private const val RELEASE_DATE_FORMAT = "yyyy"
 
+/**
+ * Adapter for a album list.
+ */
 class ArtistAlbumsAdapter(private var albums: List<ArtistAlbum>,
                           private val actionInterface: ActionInterface) : RecyclerView.Adapter<ArtistAlbumsAdapter.ViewHolder>() {
 
@@ -57,7 +60,7 @@ class ArtistAlbumsAdapter(private var albums: List<ArtistAlbum>,
             .into(holder.artworkIv)
 
 
-        // Go to album songs
+        // Click listener
         holder.container.setOnClickListener {
             actionInterface.onClickAlbum(album)
         }

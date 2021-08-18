@@ -2,6 +2,7 @@ package com.example.simplemusic.adapters
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.opengl.Visibility
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,9 @@ import com.example.simplemusic.R
 import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 
+/**
+ * Adapter for a songs list. Requires a list of ids to detect liked songs.
+ */
 class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
                         private val activity: MainActivity,
                         private val actionInterface: ActionInterface,
@@ -22,12 +26,16 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
 
     interface ActionInterface {
         fun onClickLike(song: AlbumSong)
+        fun onClickPlay(song: AlbumSong)
+        fun onClickPause(song: AlbumSong)
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.nameTv)
         val container: ConstraintLayout = view.findViewById(R.id.container)
         val like: ImageButton = view.findViewById(R.id.likeBtn)
+        val play: ImageButton = view.findViewById(R.id.playBtn)
+        val pause: ImageButton = view.findViewById(R.id.pauseBtn)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -41,25 +49,32 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
         // Like button style
         setLikeButtonStyle(holder)
 
+        // Song name
         holder.name.text = song.trackName
-
-        holder.container.setOnClickListener {
-
-        }
 
         // Set helper variable. Liked song or not
         if (song.like == null) {
             song.like = likesSongId.contains(song.trackId)
         }
 
+        // Set like icon color
         if (song.like!!)
             holder.like.setColorFilter(ContextCompat.getColor( activity, R.color.primary_dark))
         else
             holder.like.setColorFilter(ContextCompat.getColor( activity, R.color.white))
 
+
+        // Click listeners
         holder.like.setOnClickListener {
-            //holder.like.setColorFilter(ContextCompat.getColor( activity, R.color.primary_dark))
             actionInterface.onClickLike(song)
+        }
+
+        holder.play.setOnClickListener {
+            actionInterface.onClickPlay(song)
+        }
+
+        holder.pause.setOnClickListener {
+            actionInterface.onClickPause(song)
         }
     }
 
@@ -67,6 +82,9 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
         return songs.size
     }
 
+    /**
+     * List of ids to identify when a user has used the like bottom.
+     */
     fun setLikesSongId(likesSongId: List<Long>) {
         this.likesSongId = likesSongId
         notifyDataSetChanged()
@@ -78,26 +96,7 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
     }
 
     private fun setLikeButtonStyle(holder: ViewHolder) {
-        // Like button style
-        /*
-        val fieldDefaultBg = getStyle(4, ContextCompat.getColor( activity, R.color.accent))
-        val fieldPressedBg = getStyle(4, ContextCompat.getColor( activity, R.color.accent))
-        val fieldInactiveBg = getStyle(4, ContextCompat.getColor( activity, R.color.accent))
-
-        val stateListDrawable = StateListDrawable()
-        stateListDrawable.addState(intArrayOf(android.R.attr.state_pressed), fieldPressedBg)
-        stateListDrawable.addState(intArrayOf(-android.R.attr.state_enabled), fieldInactiveBg)
-        stateListDrawable.addState(intArrayOf(), fieldDefaultBg)
-
-        holder.like.background = InsetDrawable( stateListDrawable, 0)
-         */
         holder.like.setColorFilter(Color.WHITE)
     }
 
-    private fun getStyle(stroke: Int, color: Int): GradientDrawable {
-        val style = GradientDrawable();
-        style.setColor(color)
-        style.setStroke(stroke, color)
-        return style
-    }
 }

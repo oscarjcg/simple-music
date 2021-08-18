@@ -8,7 +8,9 @@ import android.net.NetworkInfo
 import android.os.Build
 import android.util.Log
 
-
+/**
+ * Check if Internet is available.
+ */
 class Connectivity {
     companion object {
         fun isOnline(context: Context): Boolean {

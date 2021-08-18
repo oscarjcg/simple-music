@@ -33,6 +33,9 @@ import kotlinx.coroutines.launch
 
 private const val SEARCH_PAGINATION = 20
 
+/**
+ * Shows albums from an artist.
+ */
 class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
 
     private lateinit var albumRv: RecyclerView
@@ -90,14 +93,11 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
             // Restore list scroll
             albumRv.layoutManager?.onRestoreInstanceState(recyclerViewState);
 
-            Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
         })
 
         // Init album list empty
-        albumsAdapter = ArtistAlbumsAdapter(ArrayList(), this)
-        linearLayoutManager = LinearLayoutManager(activity)
-        albumRv.layoutManager = linearLayoutManager
-        albumRv.adapter = albumsAdapter
+        initEmptyList()
 
         // Listener. At end of list request more albums data
         albumRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -133,6 +133,14 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         stateTv.visibility = View.GONE
     }
 
+    private fun initEmptyList() {
+        // Init album list empty
+        albumsAdapter = ArtistAlbumsAdapter(ArrayList(), this)
+        linearLayoutManager = LinearLayoutManager(activity)
+        albumRv.layoutManager = linearLayoutManager
+        albumRv.adapter = albumsAdapter
+    }
+
     private fun setToolbar() {
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
@@ -141,10 +149,14 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         toolbar.title = albumViewModel.searchedArtist
     }
 
+    /**
+     * Start request to get albums.
+     */
     private fun requestAlbums(artistId: Int, pagination: Int) {
         if (context?.let { Connectivity.isOnline(it) } == true) {
             progressBar.visibility = View.VISIBLE
 
+            // Start request
             lifecycleScope.launch {
                 albumViewModel.searchArtistAlbum(artistId,pagination)
             }
@@ -159,6 +171,9 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         }
     }
 
+    /**
+     * Click album. Goes to album songs.
+     */
     override fun onClickAlbum(album: ArtistAlbum) {
         songViewModel.selectedAlbum = album.collectionName
         val action =  ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToAlbumSongsFragment(album.collectionId!!)

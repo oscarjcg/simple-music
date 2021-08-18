@@ -40,6 +40,9 @@ import com.example.simplemusic.viewmodels.UserViewModel
 private const val SEARCH_DEFAULT = "a"
 private const val SEARCH_PAGINATION = 20
 
+/**
+ * Shows a search bar and a result list with artists.
+ */
 class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistAdapter.ActionInterface {
 
     private lateinit var artistRv: RecyclerView
@@ -57,7 +60,6 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
     private val albumViewModel: AlbumViewModel by activityViewModels()
     private val userViewModel: UserViewModel by activityViewModels() // Just init for default user
     private lateinit var navController: NavController
-
 
     private var pagination = SEARCH_PAGINATION
 
@@ -208,6 +210,9 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
+    /**
+     * Set list to top and resets pagination.
+     */
     private fun resetPagination() {
         artistRv.scrollToPosition(0);
         pagination = SEARCH_PAGINATION
@@ -240,10 +245,14 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    /**
+     * Start a search with a limit of results
+     */
     private fun requestSearch(search: String, pagination: Int) {
         if (context?.let { Connectivity.isOnline(it) } == true) {
             progressBar.visibility = View.VISIBLE
 
+            // Start request
             lifecycleScope.launch {
                 artistViewModel.searchArtist(search, pagination)
             }

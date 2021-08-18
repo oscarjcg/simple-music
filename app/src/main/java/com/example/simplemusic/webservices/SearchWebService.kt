@@ -9,6 +9,9 @@ private const val PARAM_LIMIT = "limit"
 private const val PARAM_ENTITY = "entity"
 private const val PARAM_ID = "id"
 
+/**
+ * Api for searching artist, albums and songs.
+ */
 interface SearchWebService {
 
     @GET("search")

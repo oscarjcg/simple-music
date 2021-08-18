@@ -5,6 +5,9 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.util.*
 
+/**
+ * Album data structure.
+ */
 class ArtistAlbum: MultimediaContent() {
 
     @SerializedName("collectionName")

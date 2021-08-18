@@ -5,6 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
+/**
+ * Singleton room database.
+ */
 @Database(entities = [User::class, Track::class, UserLikesTrack::class], version = 1)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao

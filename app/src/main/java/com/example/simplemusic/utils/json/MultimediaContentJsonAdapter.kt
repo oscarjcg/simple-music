@@ -13,6 +13,10 @@ private const val WRAPPER_TYPE_ARTIST = "artist"
 private const val WRAPPER_TYPE_COLLECTION = "collection"
 private const val WRAPPER_TYPE_TRACK = "track"
 
+/**
+ * Gson adapter for the search API. Return an array of artists, albums, song and unknown.
+ * All of them are inheriting from MultimediaContent, the top wrapper.
+ */
 class MultimediaContentJsonAdapter : JsonDeserializer<MultimediaContent>,
     JsonSerializer<MultimediaContent> {
     override fun deserialize(
@@ -29,6 +33,7 @@ class MultimediaContentJsonAdapter : JsonDeserializer<MultimediaContent>,
         if (jsonObject != null) {
             val wrapperType = jsonObject.get(WRAPPER_TYPE).asString
 
+            // Parsing respective type
             return when (wrapperType) {
                 WRAPPER_TYPE_ARTIST -> Gson().fromJson(json, Artist::class.java)
                 WRAPPER_TYPE_COLLECTION -> Gson().fromJson(json, ArtistAlbum::class.java)

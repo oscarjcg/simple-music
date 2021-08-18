@@ -1,6 +1,8 @@
 package com.example.simplemusic.fragments
 
 import android.content.res.Configuration
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
@@ -20,22 +22,25 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.AlbumSongsAdapter
-import com.example.simplemusic.adapters.ArtistAlbumsAdapter
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.SongViewModel
 import com.example.simplemusic.viewmodels.UserViewModel
 import kotlinx.coroutines.launch
 
+
+
 private const val SEARCH_PAGINATION = 20
 private const val GRID_SIZE_PORTRAIT = 2
 private const val GRID_SIZE_LANDSCAPE = 3
 
+/**
+ * Shows songs from an album.
+ */
 class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
 
     private lateinit var songRv: RecyclerView
@@ -52,6 +57,9 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     // List scroll
     private var recyclerViewState: Parcelable? = null
     private var pagination = SEARCH_PAGINATION
+
+    // Audio player
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,8 +100,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             // Restore list scroll
             songRv.layoutManager?.onRestoreInstanceState(recyclerViewState);
 
-            Log.println(Log.ERROR, "DEBUG", "request $pagination")//
-
+            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
         })
 
         // Init songs list empty
@@ -159,6 +166,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         if (context?.let { Connectivity.isOnline(it) } == true) {
             progressBar.visibility = View.VISIBLE
 
+            // Start request
             lifecycleScope.launch {
                 songViewModel.searchAlbumSongs(albumId, pagination)
             }
@@ -173,6 +181,9 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         }
     }
 
+    /**
+     * Retrieves liked song ids for the adapter list.
+     */
     private fun loadLikes() {
         lifecycleScope.launch {
             userViewModel.user.value?.let {
@@ -182,6 +193,9 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         }
     }
 
+    /**
+     * Click like button. Either save or delete. Updates adapter list.
+     */
     override fun onClickLike(song: AlbumSong) {
         lifecycleScope.launch {
             userViewModel.user.value?.let {
@@ -197,6 +211,54 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
                 songsAdapter.setLikesSongId(likedTracksId)
             }
         }
+    }
+
+    /**
+     * Click play button. Play a song.
+     */
+    override fun onClickPlay(song: AlbumSong) {
+        // If already playing something don't do anything, we have a button pause
+        if (mediaPlayer?.isPlaying == true) {
+            return
+        }
+
+        // Start a playing and release on completion
+        mediaPlayer = MediaPlayer().apply {
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build()
+            )
+            setDataSource(song.previewUrl)
+            prepare()
+            start()
+        }.also { mp ->
+            mp.setOnCompletionListener { releasePlayer() }
+        }
+    }
+
+    /**
+     * Click pause button. Stop playing song.
+     */
+    override fun onClickPause(song: AlbumSong) {
+        releasePlayer()
+    }
+
+    /**
+     * Stops media player by releasing it.
+     */
+    private fun releasePlayer() {
+        // Release audio player
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
+    override fun onPause() {
+        // Release audio player
+        releasePlayer()
+
+        super.onPause()
     }
 
     companion object {

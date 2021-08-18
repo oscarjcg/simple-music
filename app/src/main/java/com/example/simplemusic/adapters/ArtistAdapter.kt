@@ -9,6 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.models.multimediacontent.Artist
 
+/**
+ * Adapter for a artist list.
+ */
 class ArtistAdapter(private var artists: List<Artist>,
                     private val actionInterface: ActionInterface) : RecyclerView.Adapter<ArtistAdapter.ViewHolder>() {
 
@@ -30,9 +33,12 @@ class ArtistAdapter(private var artists: List<Artist>,
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val artist = artists[position]
 
+        // Artist name
         holder.name.text = artist.artistName
+        // Artist music genre
         holder.genre.text = artist.primaryGenreName
 
+        // Click listener
         holder.container.setOnClickListener {
             actionInterface.onClickArtist(artist)
         }

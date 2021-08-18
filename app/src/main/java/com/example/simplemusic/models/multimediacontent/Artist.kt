@@ -4,6 +4,9 @@ import com.example.simplemusic.models.multimediacontent.MultimediaContent
 import com.google.gson.annotations.SerializedName
 import com.google.gson.annotations.Expose
 
+/**
+ * Artist data structure.
+ */
 class Artist : MultimediaContent() {
 
     @SerializedName("artistType")

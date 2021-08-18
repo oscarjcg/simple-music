@@ -9,6 +9,9 @@ import com.example.simplemusic.models.stored.DEFAULT_USER_NAME
 import com.example.simplemusic.models.stored.User
 import com.example.simplemusic.repositories.UserRepository
 
+/**
+ * View model for users. Current only a default user.
+ */
 class UserViewModel(application: Application) : AndroidViewModel(application) {
     val user = MutableLiveData<User>()
 
@@ -19,14 +22,15 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         userRepository = UserRepository(db.userDao())
     }
 
+    /**
+     * Add a default user if none created. Or finds a default user.
+     */
     suspend fun setDefaultUser() {
         val users = userRepository.getUsers()
         if (users.isEmpty())
             userRepository.addUser(User(DEFAULT_USER_NAME))
 
         user.value = userRepository.findUserByName(DEFAULT_USER_NAME)
-
-        Log.println(Log.ERROR, "DEBUG", "request ${users.size}")//
     }
 
     suspend fun addUserLikesTrack(userId: Long, trackId: Long) {
