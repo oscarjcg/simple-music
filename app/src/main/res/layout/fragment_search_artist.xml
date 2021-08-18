@@ -32,7 +32,7 @@
     <LinearLayout
         android:id="@+id/searchContainer"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -41,8 +41,9 @@
 
         <ImageButton
             android:id="@+id/searchBtn"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
             android:background="@drawable/round_corner"
             android:padding="4dp"
             android:scaleType="centerInside"
@@ -64,8 +65,9 @@
 
         <ImageButton
             android:id="@+id/clearBtn"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
             android:background="@drawable/round_corner"
             android:padding="4dp"
             android:scaleType="centerInside"
