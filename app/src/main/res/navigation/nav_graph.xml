@@ -11,7 +11,8 @@
         tools:layout="@layout/fragment_search_artist">
         <action
             android:id="@+id/action_searchArtistFragment_to_artistAlbumsFragment"
-            app:destination="@id/artistAlbumsFragment" />
+            app:destination="@id/artistAlbumsFragment"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/artistAlbumsFragment"
@@ -22,7 +23,8 @@
             app:argType="integer" />
         <action
             android:id="@+id/action_artistAlbumsFragment_to_albumSongsFragment"
-            app:destination="@id/albumSongsFragment" />
+            app:destination="@id/albumSongsFragment"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/albumSongsFragment"
