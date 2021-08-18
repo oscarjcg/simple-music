@@ -1,5 +1,6 @@
 package com.example.simplemusic.fragments
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
@@ -28,11 +29,14 @@ import com.example.simplemusic.adapters.ArtistAlbumsAdapter
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.SongViewModel
+import com.example.simplemusic.viewmodels.UserViewModel
 import kotlinx.coroutines.launch
 
 private const val SEARCH_PAGINATION = 20
+private const val GRID_SIZE_PORTRAIT = 2
+private const val GRID_SIZE_LANDSCAPE = 3
 
-class AlbumSongsFragment : Fragment() {
+class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
 
     private lateinit var songRv: RecyclerView
     private lateinit var songsAdapter: AlbumSongsAdapter
@@ -44,6 +48,7 @@ class AlbumSongsFragment : Fragment() {
     private val args: AlbumSongsFragmentArgs by navArgs()
     private lateinit var navController: NavController
     private val songViewModel: SongViewModel by activityViewModels()
+    private val userViewModel: UserViewModel by activityViewModels()
     // List scroll
     private var recyclerViewState: Parcelable? = null
     private var pagination = SEARCH_PAGINATION
@@ -88,13 +93,11 @@ class AlbumSongsFragment : Fragment() {
             songRv.layoutManager?.onRestoreInstanceState(recyclerViewState);
 
             Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+
         })
 
         // Init songs list empty
-        songsAdapter = AlbumSongsAdapter(ArrayList(), activity as MainActivity)
-        gridLayoutManager = GridLayoutManager(activity, 2)
-        songRv.layoutManager = gridLayoutManager
-        songRv.adapter = songsAdapter
+        initListEmpty()
 
         // Listener. At end of list request more albums data
         songRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -116,6 +119,9 @@ class AlbumSongsFragment : Fragment() {
             }
         })
 
+        // Load liked songs
+        loadLikes()
+
         // Start fetching songs
         requestSongs(args.albumId, pagination)
     }
@@ -128,6 +134,17 @@ class AlbumSongsFragment : Fragment() {
 
         progressBar.visibility = View.GONE
         stateTv.visibility = View.GONE
+    }
+
+    private fun initListEmpty() {
+        // Init songs list empty
+        songsAdapter = AlbumSongsAdapter(ArrayList(), activity as MainActivity, this, ArrayList())
+        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+            gridLayoutManager = GridLayoutManager(activity, GRID_SIZE_PORTRAIT)
+        else
+            gridLayoutManager = GridLayoutManager(activity, GRID_SIZE_LANDSCAPE)
+        songRv.layoutManager = gridLayoutManager
+        songRv.adapter = songsAdapter
     }
 
     private fun setToolbar() {
@@ -153,6 +170,32 @@ class AlbumSongsFragment : Fragment() {
             }
 
             Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadLikes() {
+        lifecycleScope.launch {
+            userViewModel.user.value?.let {
+                val likedTracksId = userViewModel.getUserLikesTrack(it.userId)
+                songsAdapter.setLikesSongId(likedTracksId)
+            }
+        }
+    }
+
+    override fun onClickLike(song: AlbumSong) {
+        lifecycleScope.launch {
+            userViewModel.user.value?.let {
+                // Switch like . Set or remove like
+                if (song.like!!)
+                    userViewModel.deleteUserLikesTrack(it.userId, song.trackId!!)
+                else
+                    userViewModel.addUserLikesTrack(it.userId, song.trackId!!)
+                song.like = !song.like!!
+
+                // Update liked songs id list
+                val likedTracksId = userViewModel.getUserLikesTrack(it.userId)
+                songsAdapter.setLikesSongId(likedTracksId)
+            }
         }
     }
 

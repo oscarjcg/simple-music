@@ -34,6 +34,7 @@ import androidx.core.widget.doAfterTextChanged
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
+import com.example.simplemusic.viewmodels.UserViewModel
 
 
 private const val SEARCH_DEFAULT = "a"
@@ -54,6 +55,7 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
 
     private val artistViewModel: ArtistViewModel by activityViewModels()
     private val albumViewModel: AlbumViewModel by activityViewModels()
+    private val userViewModel: UserViewModel by activityViewModels() // Just init for default user
     private lateinit var navController: NavController
 
 
@@ -177,6 +179,10 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
             }
         }
 
+        // Default user
+        lifecycleScope.launch {
+            userViewModel.setDefaultUser()
+        }
     }
 
     private fun initView(view: View) {

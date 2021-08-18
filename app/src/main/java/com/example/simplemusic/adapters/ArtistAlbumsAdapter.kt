@@ -30,6 +30,7 @@ class ArtistAlbumsAdapter(private var albums: List<ArtistAlbum>,
         val container: ConstraintLayout = view.findViewById(R.id.container)
         val artworkIv: ImageView = view.findViewById(R.id.artworkIv)
         val dateTv: TextView = view.findViewById(R.id.dateTv)
+        val tracksTv: TextView = view.findViewById(R.id.tracksTv)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -46,6 +47,9 @@ class ArtistAlbumsAdapter(private var albums: List<ArtistAlbum>,
         // Album release date
         val simpleDateFormat = SimpleDateFormat(RELEASE_DATE_FORMAT, Locale.ENGLISH)
         holder.dateTv.text = simpleDateFormat.format(album.releaseDate)
+
+        // Album tracks
+        holder.tracksTv.text = album.trackCount.toString()
 
         // Artwork image
         Glide.with(holder.artworkIv)

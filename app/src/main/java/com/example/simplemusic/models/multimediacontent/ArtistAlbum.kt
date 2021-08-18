@@ -23,4 +23,8 @@ class ArtistAlbum: MultimediaContent() {
     @Expose
     var releaseDate: Date? = null
 
+    @SerializedName("trackCount")
+    @Expose
+    var trackCount: Int? = null
+
 }
