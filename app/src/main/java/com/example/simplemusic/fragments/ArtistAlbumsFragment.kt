@@ -2,15 +2,14 @@ package com.example.simplemusic.fragments
 
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -18,12 +17,10 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
-import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.ArtistAlbumsAdapter
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.utils.Connectivity
@@ -44,6 +41,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     private lateinit var linearLayoutManager: LinearLayoutManager
     private lateinit var progressBar: ProgressBar
     private lateinit var stateTv: TextView
+    private lateinit var musicVideosBtn: Button
 
     private val args: ArtistAlbumsFragmentArgs by navArgs()
     private val albumViewModel: AlbumViewModel by activityViewModels()
@@ -119,6 +117,12 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
             }
         })
 
+        // Go to music videos
+        musicVideosBtn.setOnClickListener {
+            val action = ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToArtistMusicVideosFragment()
+            navController.navigate(action)
+        }
+
         // Start fetching albums
         requestAlbums(args.artitstId, pagination)
     }
@@ -128,6 +132,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         toolbar = view.findViewById(R.id.toolbar)
         progressBar = view.findViewById(R.id.progressBar)
         stateTv = view.findViewById(R.id.stateTv)
+        musicVideosBtn = view.findViewById(R.id.musicVideosBtn)
 
         progressBar.visibility = View.GONE
         stateTv.visibility = View.GONE

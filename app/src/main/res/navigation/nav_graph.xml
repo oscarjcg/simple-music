@@ -25,6 +25,10 @@
             android:id="@+id/action_artistAlbumsFragment_to_albumSongsFragment"
             app:destination="@id/albumSongsFragment"
             app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_artistAlbumsFragment_to_artistMusicVideosFragment"
+            app:destination="@id/artistMusicVideosFragment"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/albumSongsFragment"
@@ -34,4 +38,9 @@
             android:name="albumId"
             app:argType="integer" />
     </fragment>
+    <fragment
+        android:id="@+id/artistMusicVideosFragment"
+        android:name="com.example.simplemusic.fragments.ArtistMusicVideosFragment"
+        android:label="fragment_artist_music_videos"
+        tools:layout="@layout/fragment_artist_music_videos" />
 </navigation>

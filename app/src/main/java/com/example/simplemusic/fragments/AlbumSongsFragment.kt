@@ -100,6 +100,13 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             // Restore list scroll
             songRv.layoutManager?.onRestoreInstanceState(recyclerViewState);
 
+            if (songs.isEmpty()) {
+                stateTv.text = getText(R.string.no_results)
+                stateTv.visibility = View.VISIBLE
+            } else {
+                stateTv.visibility = View.GONE
+            }
+
             //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
         })
 
