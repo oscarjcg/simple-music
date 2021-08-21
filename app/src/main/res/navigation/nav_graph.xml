@@ -36,7 +36,7 @@
         tools:layout="@layout/fragment_album_songs">
         <argument
             android:name="albumId"
-            app:argType="integer" />
+            app:argType="long" />
     </fragment>
     <fragment
         android:id="@+id/artistMusicVideosFragment"

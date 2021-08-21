@@ -169,7 +169,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         toolbar.title = songViewModel.selectedAlbum
     }
 
-    private fun requestSongs(albumId: Int, pagination: Int) {
+    private fun requestSongs(albumId: Long, pagination: Int) {
         if (context?.let { Connectivity.isOnline(it) } == true) {
             progressBar.visibility = View.VISIBLE
 

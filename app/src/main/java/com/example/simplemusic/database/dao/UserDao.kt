@@ -1,7 +1,9 @@
-package com.example.simplemusic.models.stored
+package com.example.simplemusic.database.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.example.simplemusic.models.stored.User
+import com.example.simplemusic.models.stored.UserLikesTrack
+import com.example.simplemusic.models.stored.UserWithLikedTracks
 
 @Dao
 interface UserDao {

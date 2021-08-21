@@ -1,17 +1,24 @@
 package com.example.simplemusic.viewmodels
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.simplemusic.models.multimediacontent.MusicVideo
+import com.example.simplemusic.database.AppDatabase
 import com.example.simplemusic.repositories.MusicVideoRepository
 
 /**
  * View model for music videos.
  */
-class MusicVideoViewModel : ViewModel()  {
+class MusicVideoViewModel(application: Application) : AndroidViewModel(application)  {
 
     var musicVideos = MutableLiveData<List<MusicVideo>>()
-    private val musicVideoRepository = MusicVideoRepository()
+    private val musicVideoRepository: MusicVideoRepository
+
+    init {
+        val db = AppDatabase.getDatabase(application)
+        musicVideoRepository = MusicVideoRepository(db.apiCacheDao())
+    }
 
     // UI
     var searchingMusicVideos: Boolean = false

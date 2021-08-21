@@ -1,7 +1,7 @@
 package com.example.simplemusic.repositories
 
 import com.example.simplemusic.models.stored.User
-import com.example.simplemusic.models.stored.UserDao
+import com.example.simplemusic.database.dao.UserDao
 import com.example.simplemusic.models.stored.UserLikesTrack
 
 class UserRepository(private val userDao: UserDao) {

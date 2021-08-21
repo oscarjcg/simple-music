@@ -109,7 +109,7 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
             // Restore list scroll
             artistRv.layoutManager?.onRestoreInstanceState(scroll)
 
-            Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
 
             // If there are results, the artist list will be at the center
             if (artists.isEmpty()) {

@@ -1,10 +1,9 @@
 package com.example.simplemusic.viewmodels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.example.simplemusic.models.stored.AppDatabase
+import com.example.simplemusic.database.AppDatabase
 import com.example.simplemusic.models.stored.DEFAULT_USER_NAME
 import com.example.simplemusic.models.stored.User
 import com.example.simplemusic.repositories.UserRepository

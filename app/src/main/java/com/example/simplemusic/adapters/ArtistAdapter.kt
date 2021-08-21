@@ -49,7 +49,17 @@ class ArtistAdapter(private var artists: List<Artist>,
     }
 
     fun setArtists(artists: List<Artist>) {
-        this.artists = artists
-        notifyDataSetChanged()
+
+        // Either reload everything or just new inserted data
+        if (this.artists.size == artists.size) {
+            this.artists = artists
+            notifyDataSetChanged()
+        } else {
+            val start = this.artists.size
+            this.artists = artists
+            notifyItemRangeInserted(start, artists.size)
+        }
+
+
     }
 }
