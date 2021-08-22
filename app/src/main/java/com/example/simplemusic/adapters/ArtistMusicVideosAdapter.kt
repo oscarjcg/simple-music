@@ -25,6 +25,7 @@ class ArtistMusicVideosAdapter(private var musicVideos: List<MusicVideo>,
 
     interface ActionInterface {
         fun onClickMusicVideo(musicVideo: MusicVideo)
+        fun onPlayMusicVideo(musicVideo: MusicVideo)
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -57,6 +58,10 @@ class ArtistMusicVideosAdapter(private var musicVideos: List<MusicVideo>,
 
         // Click listener
         holder.play.setOnClickListener {
+            actionInterface.onPlayMusicVideo(musicVideo)
+        }
+
+        holder.container.setOnClickListener {
             actionInterface.onClickMusicVideo(musicVideo)
         }
     }

@@ -109,8 +109,6 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
             // Restore list scroll
             artistRv.layoutManager?.onRestoreInstanceState(scroll)
 
-            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
-
             // If there are results, the artist list will be at the center
             if (artists.isEmpty()) {
                 // Trying to search something but no results
@@ -233,6 +231,7 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         (requireActivity() as MainActivity).title = ""
     }
 
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         // Search as icon that deploys an input
         inflater.inflate(R.menu.menu, menu)
@@ -262,7 +261,9 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
                 stateTv.text = getText(R.string.no_results)
                 stateTv.visibility = View.VISIBLE
             }
-
+            lifecycleScope.launch {
+                artistViewModel.searchArtist(search, pagination)
+            }
             Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
         }
     }

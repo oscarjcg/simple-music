@@ -1,14 +1,14 @@
 package com.example.simplemusic.fragments
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -48,6 +48,8 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     // List scroll
     private var recyclerViewState: Parcelable? = null
     private var pagination = SEARCH_PAGINATION
+
+    private var waitShare = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,6 +149,26 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         toolbar.setupWithNavController( navHostFragment)
         // Title
         toolbar.title = getString(R.string.music_videos)
+
+        setHasOptionsMenu(true)
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_share -> {
+                waitShare = true
+                Toast.makeText(activity, R.string.select_music_video, Toast.LENGTH_SHORT).show()
+                return true
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     private fun initEmptyList() {
@@ -180,9 +202,27 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     }
 
     /**
-     * Click play video. Starts to play a video.
+     * Click video to share.
      */
     override fun onClickMusicVideo(musicVideo: MusicVideo) {
+        if (waitShare) {
+            waitShare = false
+            // Share artist and music video
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, albumViewModel.searchedArtist + " - " + musicVideo.trackName)
+                type = "text/plain"
+            }
+
+            val shareIntent = Intent.createChooser(sendIntent, albumViewModel.searchedArtist + " - " + musicVideo.trackName)
+            startActivity(shareIntent)
+        }
+    }
+
+    /**
+     * Click play video. Starts to play a video.
+     */
+    override fun onPlayMusicVideo(musicVideo: MusicVideo) {
         startVideoPlayer(musicVideo)
     }
 

@@ -1,15 +1,16 @@
 package com.example.simplemusic.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -50,6 +51,8 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     // List scroll
     private var recyclerViewState: Parcelable? = null
     private var pagination = SEARCH_PAGINATION
+
+    private var waitShare = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -152,6 +155,27 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         toolbar.setupWithNavController( navHostFragment)
         // Title
         toolbar.title = albumViewModel.searchedArtist
+
+        setHasOptionsMenu(true)
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_share -> {
+                waitShare = true
+                Toast.makeText(activity, R.string.select_album, Toast.LENGTH_SHORT).show()
+                return true
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     /**
@@ -177,12 +201,26 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     }
 
     /**
-     * Click album. Goes to album songs.
+     * Click album. Goes to album songs or share it.
      */
     override fun onClickAlbum(album: ArtistAlbum) {
-        songViewModel.selectedAlbum = album.collectionName
-        val action =  ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToAlbumSongsFragment(album.collectionId!!)
-        navController.navigate(action)
+        if (waitShare) {
+            waitShare = false
+            // Share artist and album
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, albumViewModel.searchedArtist + " - " + album.collectionName)
+                type = "text/plain"
+            }
+
+            val shareIntent = Intent.createChooser(sendIntent, albumViewModel.searchedArtist + " - " + album.collectionName)
+            startActivity(shareIntent)
+        } else {
+            songViewModel.selectedAlbum = album.collectionName
+            val action =
+                ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToAlbumSongsFragment(album.collectionId!!)
+            navController.navigate(action)
+        }
     }
 
     companion object {

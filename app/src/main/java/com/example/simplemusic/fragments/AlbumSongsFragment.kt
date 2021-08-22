@@ -1,18 +1,18 @@
 package com.example.simplemusic.fragments
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -28,6 +28,8 @@ import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.AlbumSongsAdapter
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.utils.Connectivity
+import com.example.simplemusic.viewmodels.AlbumViewModel
+import com.example.simplemusic.viewmodels.ArtistViewModel
 import com.example.simplemusic.viewmodels.SongViewModel
 import com.example.simplemusic.viewmodels.UserViewModel
 import kotlinx.coroutines.launch
@@ -53,10 +55,13 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     private val args: AlbumSongsFragmentArgs by navArgs()
     private lateinit var navController: NavController
     private val songViewModel: SongViewModel by activityViewModels()
+    private val albumViewModel: AlbumViewModel by activityViewModels()
     private val userViewModel: UserViewModel by activityViewModels()
     // List scroll
     private var recyclerViewState: Parcelable? = null
     private var pagination = SEARCH_PAGINATION
+
+    private var waitShare = false
 
     // Audio player
     private var mediaPlayer: MediaPlayer? = null
@@ -167,6 +172,26 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         toolbar.setupWithNavController( navHostFragment)
         // Title
         toolbar.title = songViewModel.selectedAlbum
+
+        setHasOptionsMenu(true)
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_share -> {
+                waitShare = true
+                Toast.makeText(activity, R.string.select_song, Toast.LENGTH_SHORT).show()
+                return true
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     private fun requestSongs(albumId: Long, pagination: Int) {
@@ -242,6 +267,24 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             start()
         }.also { mp ->
             mp.setOnCompletionListener { releasePlayer() }
+        }
+    }
+
+    /**
+     * Click a song to share it.
+     */
+    override fun onClickSong(song: AlbumSong) {
+        if (waitShare) {
+            waitShare = false
+            // Share artist and song
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, albumViewModel.searchedArtist + " - " + song.trackName)
+                type = "text/plain"
+            }
+
+            val shareIntent = Intent.createChooser(sendIntent, albumViewModel.searchedArtist + " - " + song.trackName)
+            startActivity(shareIntent)
         }
     }
 

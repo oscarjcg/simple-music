@@ -7,6 +7,11 @@
         android:icon="@android:drawable/ic_menu_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="ifRoom"
+        android:visible="false"
         android:title="Search" />
+
+    <item android:id="@+id/action_share"
+        android:title="@string/share"
+        />
 
 </menu>

@@ -28,6 +28,7 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
         fun onClickLike(song: AlbumSong)
         fun onClickPlay(song: AlbumSong)
         fun onClickPause(song: AlbumSong)
+        fun onClickSong(song: AlbumSong)
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -75,6 +76,10 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
 
         holder.pause.setOnClickListener {
             actionInterface.onClickPause(song)
+        }
+
+        holder.container.setOnClickListener {
+            actionInterface.onClickSong(song)
         }
     }
 

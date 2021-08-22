@@ -6,5 +6,9 @@
     <string name="no_results">No results</string>
 
     <string name="music_videos">Music Videos</string>
+    <string name="share">Share</string>
+    <string name="select_album">Select an album</string>
+    <string name="select_song">Select a song</string>
+    <string name="select_music_video">Select a music_video</string>
 
 </resources>

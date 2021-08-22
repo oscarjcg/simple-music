@@ -5,4 +5,8 @@
     <string name="no_internet">Sin conexión a Internet</string>
     <string name="no_results">Sin resultados</string>
     <string name="music_videos">Videos musicales</string>
+    <string name="share">Compartir</string>
+    <string name="select_album">Selccione un álbum</string>
+    <string name="select_song">Seleccione una canción</string>
+    <string name="select_music_video">Seleccione un video</string>
 </resources>

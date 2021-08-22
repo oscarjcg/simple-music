@@ -3,6 +3,7 @@ package com.example.simplemusic.repositories
 import android.util.Log
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.database.dao.ApiCacheDao
+import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.models.stored.search.Search
 import com.example.simplemusic.models.stored.search.SearchResultArtist
 import com.example.simplemusic.utils.BASE_URL
@@ -10,6 +11,7 @@ import com.example.simplemusic.webservices.SearchWebService
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.Exception
 
 class ArtistRepository(private val apiCacheDao: ApiCacheDao) {
 
@@ -18,7 +20,16 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao) {
         if (artistsCache != null)
             return artistsCache
 
-        val searchResponse = getRetrofit().create(SearchWebService::class.java).getArtists(term, limit)
+        // Request
+        val searchResponse: SearchResponse
+        try {
+            searchResponse = getRetrofit().create(SearchWebService::class.java).getArtists(term, limit)
+        }
+        catch (e: Exception) {
+            e.printStackTrace()
+            // In case of error just return no results
+            return ArrayList()
+        }
 
         // Filter. Only artist
         val artists = searchResponse.results?.filterIsInstance<Artist>() as ArrayList<Artist>
