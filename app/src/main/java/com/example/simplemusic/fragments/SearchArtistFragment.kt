@@ -119,11 +119,14 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
                 // Move search bar down
                 searchBarCenter()
 
+                // Check is is because internet
+                if (context?.let { Connectivity.isOnline(it) } == false) {
+                    Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
+                }
             } else {
                 stateTv.visibility = View.GONE
                 // Move search bar up
                 searchBarTop()
-
             }
         })
 
@@ -248,24 +251,12 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
      * Start a search with a limit of results
      */
     private fun requestSearch(search: String, pagination: Int) {
-        if (context?.let { Connectivity.isOnline(it) } == true) {
             progressBar.visibility = View.VISIBLE
 
             // Start request
             lifecycleScope.launch {
                 artistViewModel.searchArtist(search, pagination)
             }
-        } else {
-            // If no internet and no artist data, show at least info
-            if (artistViewModel.artists.value == null) {
-                stateTv.text = getText(R.string.no_results)
-                stateTv.visibility = View.VISIBLE
-            }
-            lifecycleScope.launch {
-                artistViewModel.searchArtist(search, pagination)
-            }
-            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
-        }
     }
 
     /**

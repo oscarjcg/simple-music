@@ -95,6 +95,18 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
             albumRv.layoutManager?.onRestoreInstanceState(recyclerViewState);
 
             //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+            if (albums.isEmpty()) {
+                stateTv.visibility = View.VISIBLE
+                stateTv.text = getText(R.string.no_results)
+
+                // Check if it is because internet
+                if (context?.let { Connectivity.isOnline(it) } == false) {
+                    Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
+                }
+
+            } else {
+                stateTv.visibility = View.GONE
+            }
         })
 
         // Init album list empty
@@ -182,21 +194,11 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
      * Start request to get albums.
      */
     private fun requestAlbums(artistId: Int, pagination: Int) {
-        if (context?.let { Connectivity.isOnline(it) } == true) {
-            progressBar.visibility = View.VISIBLE
+        progressBar.visibility = View.VISIBLE
 
-            // Start request
-            lifecycleScope.launch {
-                albumViewModel.searchArtistAlbum(artistId,pagination)
-            }
-        } else {
-            // If no internet and no artist data, show at least info
-            if (albumViewModel.albums.value == null) {
-                stateTv.text = getText(R.string.no_results)
-                stateTv.visibility = View.VISIBLE
-            }
-
-            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
+        // Start request
+        lifecycleScope.launch {
+            albumViewModel.searchArtistAlbum(artistId,pagination)
         }
     }
 
