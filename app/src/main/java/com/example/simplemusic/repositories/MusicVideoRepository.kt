@@ -63,6 +63,10 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao) {
         apiCacheDao.addAllMusicVideos(musicVideos)
     }
 
+    suspend fun deleteAll() {
+        apiCacheDao.deleteAllMusicVideos()
+    }
+
     private fun getRetrofit(): Retrofit {
         val gson = GsonBuilder()
             .create()

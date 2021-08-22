@@ -28,4 +28,8 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
         searchingSongs = true
         songs.value = songRepository.getAlbumSongs(albumId, limit)
     }
+
+    suspend fun deleteAll() {
+        songRepository.deleteAll()
+    }
 }

@@ -64,6 +64,10 @@ class SongRepository(private val apiCacheDao: ApiCacheDao) {
         apiCacheDao.addAllSongs(songs)
     }
 
+    suspend fun deleteAll() {
+        apiCacheDao.deleteAllSongs()
+    }
+
     private fun getRetrofit(): Retrofit {
         val gson = GsonBuilder()
             .create()

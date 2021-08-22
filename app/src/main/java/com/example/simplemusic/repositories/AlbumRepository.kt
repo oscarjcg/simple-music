@@ -65,6 +65,10 @@ class AlbumRepository(private val apiCacheDao: ApiCacheDao) {
         apiCacheDao.addAllAlbums(albums)
     }
 
+    suspend fun deleteAll() {
+        apiCacheDao.deleteAllAlbums()
+    }
+
     private fun getRetrofit(): Retrofit {
         val gson = GsonBuilder()
             .create()

@@ -13,6 +13,7 @@ import com.example.simplemusic.models.stored.User
 import com.example.simplemusic.database.dao.UserDao
 import com.example.simplemusic.models.stored.UserLikesTrack
 import com.example.simplemusic.database.dao.ApiCacheDao
+import com.example.simplemusic.database.dao.SearchDao
 import com.example.simplemusic.models.stored.search.Search
 import com.example.simplemusic.models.stored.search.SearchResultArtist
 
@@ -32,6 +33,7 @@ import com.example.simplemusic.models.stored.search.SearchResultArtist
 abstract class AppDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun apiCacheDao(): ApiCacheDao
+    abstract fun searchDao(): SearchDao
 
     companion object {
         @Volatile

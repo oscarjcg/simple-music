@@ -27,4 +27,8 @@ class MusicVideoViewModel(application: Application) : AndroidViewModel(applicati
         searchingMusicVideos = true
         musicVideos.value = musicVideoRepository.getArtistMusicVideos(term, limit)
     }
+
+    suspend fun deleteAll() {
+        musicVideoRepository.deleteAll()
+    }
 }

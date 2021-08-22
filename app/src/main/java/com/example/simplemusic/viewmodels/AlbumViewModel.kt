@@ -27,4 +27,8 @@ class AlbumViewModel(application: Application) : AndroidViewModel(application) {
         searchingAlbums = true
         albums.value = albumRepository.getArtistAlbums(artistId, limit)
     }
+
+    suspend fun deleteAll() {
+        albumRepository.deleteAll()
+    }
 }

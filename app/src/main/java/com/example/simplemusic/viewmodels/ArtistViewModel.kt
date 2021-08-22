@@ -20,12 +20,17 @@ class ArtistViewModel(application: Application) : AndroidViewModel(application) 
 
     init {
         val db = AppDatabase.getDatabase(application)
-        artistRepository = ArtistRepository(db.apiCacheDao())
+        artistRepository = ArtistRepository(db.apiCacheDao(), db.searchDao())
     }
 
     suspend fun searchArtist(term: String, limit: Int) {
         searchedArtist = term
         searchingArtist = true
         artists.value = artistRepository.getArtists(term, limit)
+    }
+
+    suspend fun deleteAll() {
+        artistRepository.deleteAll()
+        artistRepository.deleteAllSearch()
     }
 }
