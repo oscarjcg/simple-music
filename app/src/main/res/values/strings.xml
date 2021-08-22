@@ -10,5 +10,6 @@
     <string name="select_album">Select an album</string>
     <string name="select_song">Select a song</string>
     <string name="select_music_video">Select a music_video</string>
+    <string name="playing_song">Playing song</string>
 
 </resources>

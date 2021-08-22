@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
 import android.view.*
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -51,6 +52,8 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     private lateinit var gridLayoutManager: GridLayoutManager
     private lateinit var progressBar: ProgressBar
     private lateinit var stateTv: TextView
+    private lateinit var playingSongTv: TextView
+    private lateinit var pauseBtn: ImageButton
 
     private val args: AlbumSongsFragmentArgs by navArgs()
     private lateinit var navController: NavController
@@ -146,6 +149,11 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         // Load liked songs
         loadLikes()
 
+        // Click pause button. Stop playing song
+        pauseBtn.setOnClickListener {
+            releasePlayer()
+        }
+
         // Start fetching songs
         requestSongs(args.albumId, pagination)
     }
@@ -155,9 +163,13 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         toolbar = view.findViewById(R.id.toolbar)
         progressBar = view.findViewById(R.id.progressBar)
         stateTv = view.findViewById(R.id.stateTv)
+        playingSongTv = view.findViewById(R.id.playingSongTv)
+        pauseBtn = view.findViewById(R.id.pauseBtn)
 
         progressBar.visibility = View.GONE
         stateTv.visibility = View.GONE
+        playingSongTv.visibility = View.GONE
+        pauseBtn.visibility = View.GONE
     }
 
     private fun initListEmpty() {
@@ -249,10 +261,12 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             return
         }
 
-        // If already playing something don't do anything, we have a button pause
+        // If already playing something don't do anything, reset before
         if (mediaPlayer?.isPlaying == true) {
-            return
+            releasePlayer()
         }
+
+        progressBar.visibility = View.VISIBLE
 
         // Start a playing and release on completion
         mediaPlayer = MediaPlayer().apply {
@@ -264,9 +278,18 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             )
             setDataSource(song.previewUrl)
             prepare()
+            setOnPreparedListener {
+                progressBar.visibility = View.GONE
+            }
             start()
+
+            playingSongTv.text = song.trackName
+            playingSongTv.visibility = View.VISIBLE
+            pauseBtn.visibility = View.VISIBLE
         }.also { mp ->
-            mp.setOnCompletionListener { releasePlayer() }
+            mp.setOnCompletionListener {
+                releasePlayer()
+            }
         }
     }
 
@@ -289,19 +312,14 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     }
 
     /**
-     * Click pause button. Stop playing song.
-     */
-    override fun onClickPause(song: AlbumSong) {
-        releasePlayer()
-    }
-
-    /**
      * Stops media player by releasing it.
      */
     private fun releasePlayer() {
         // Release audio player
         mediaPlayer?.release()
         mediaPlayer = null
+        playingSongTv.visibility = View.GONE
+        pauseBtn.visibility = View.GONE
     }
 
     override fun onPause() {

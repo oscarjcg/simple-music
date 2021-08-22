@@ -27,7 +27,6 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
     interface ActionInterface {
         fun onClickLike(song: AlbumSong)
         fun onClickPlay(song: AlbumSong)
-        fun onClickPause(song: AlbumSong)
         fun onClickSong(song: AlbumSong)
     }
 
@@ -36,7 +35,6 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
         val container: ConstraintLayout = view.findViewById(R.id.container)
         val like: ImageButton = view.findViewById(R.id.likeBtn)
         val play: ImageButton = view.findViewById(R.id.playBtn)
-        val pause: ImageButton = view.findViewById(R.id.pauseBtn)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -72,10 +70,6 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
 
         holder.play.setOnClickListener {
             actionInterface.onClickPlay(song)
-        }
-
-        holder.pause.setOnClickListener {
-            actionInterface.onClickPause(song)
         }
 
         holder.container.setOnClickListener {

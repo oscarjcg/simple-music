@@ -9,4 +9,5 @@
     <string name="select_album">Selccione un álbum</string>
     <string name="select_song">Seleccione una canción</string>
     <string name="select_music_video">Seleccione un video</string>
+    <string name="playing_song">Reproduciendo canción</string>
 </resources>
