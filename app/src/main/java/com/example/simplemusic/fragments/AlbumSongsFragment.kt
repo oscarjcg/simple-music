@@ -33,6 +33,7 @@ import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.ArtistViewModel
 import com.example.simplemusic.viewmodels.SongViewModel
 import com.example.simplemusic.viewmodels.UserViewModel
+import kotlinx.android.synthetic.main.fragment_album_songs.*
 import kotlinx.coroutines.launch
 
 
@@ -46,14 +47,8 @@ private const val GRID_SIZE_LANDSCAPE = 3
  */
 class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
 
-    private lateinit var songRv: RecyclerView
     private lateinit var songsAdapter: AlbumSongsAdapter
-    private lateinit var toolbar: Toolbar
     private lateinit var gridLayoutManager: GridLayoutManager
-    private lateinit var progressBar: ProgressBar
-    private lateinit var stateTv: TextView
-    private lateinit var playingSongTv: TextView
-    private lateinit var pauseBtn: ImageButton
 
     private val args: AlbumSongsFragmentArgs by navArgs()
     private lateinit var navController: NavController
@@ -80,14 +75,12 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_album_songs, container, false)
-        initView(view)
-
-        return view
+        return inflater.inflate(R.layout.fragment_album_songs, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initView()
 
         // Navigation
         navController = findNavController()
@@ -158,14 +151,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         requestSongs(args.albumId, pagination)
     }
 
-    private fun initView(view: View) {
-        songRv = view.findViewById(R.id.songRv)
-        toolbar = view.findViewById(R.id.toolbar)
-        progressBar = view.findViewById(R.id.progressBar)
-        stateTv = view.findViewById(R.id.stateTv)
-        playingSongTv = view.findViewById(R.id.playingSongTv)
-        pauseBtn = view.findViewById(R.id.pauseBtn)
-
+    private fun initView() {
         progressBar.visibility = View.GONE
         stateTv.visibility = View.GONE
         playingSongTv.visibility = View.GONE

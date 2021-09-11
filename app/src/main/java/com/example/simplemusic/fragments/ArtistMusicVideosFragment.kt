@@ -24,6 +24,7 @@ import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.MusicVideoViewModel
+import kotlinx.android.synthetic.main.fragment_artist_music_videos.*
 import kotlinx.coroutines.launch
 
 private const val SEARCH_PAGINATION = 20
@@ -33,13 +34,7 @@ private const val SEARCH_PAGINATION = 20
  */
 class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInterface {
 
-    private lateinit var musicVideosRv: RecyclerView
-    private lateinit var toolbar: Toolbar
     private lateinit var linearLayoutManager: LinearLayoutManager
-    private lateinit var progressBar: ProgressBar
-    private lateinit var stateTv: TextView
-    private lateinit var videoView: VideoView
-    private lateinit var closeBtn: ImageButton
 
     private val albumViewModel: AlbumViewModel by activityViewModels()
     private val musicVideoViewModel: MusicVideoViewModel by activityViewModels()
@@ -62,14 +57,12 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_artist_music_videos, container, false)
-        initView(view)
-
-        return view
+        return inflater.inflate(R.layout.fragment_artist_music_videos, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initView()
 
         // Toolbar
         setToolbar()
@@ -134,14 +127,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         albumViewModel.searchedArtist?.let { requestMusicVideos(it, pagination) }
     }
 
-    private fun initView(view: View) {
-        musicVideosRv = view.findViewById(R.id.musicVideosRv)
-        toolbar = view.findViewById(R.id.toolbar)
-        progressBar = view.findViewById(R.id.progressBar)
-        stateTv = view.findViewById(R.id.stateTv)
-        videoView = view.findViewById(R.id.videoView)
-        closeBtn = view.findViewById(R.id.closeBtn)
-
+    private fun initView() {
         progressBar.visibility = View.GONE
         stateTv.visibility = View.GONE
         videoView.visibility = View.GONE

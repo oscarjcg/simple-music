@@ -3,12 +3,9 @@ package com.example.simplemusic.fragments
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -23,18 +20,16 @@ import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.ArtistAdapter
 import com.example.simplemusic.viewmodels.ArtistViewModel
 import kotlinx.coroutines.launch
-import android.os.Parcelable
-import android.text.TextWatcher
 import android.transition.TransitionManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.doAfterTextChanged
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.UserViewModel
+import kotlinx.android.synthetic.main.fragment_search_artist.*
 
 
 private const val SEARCH_DEFAULT = "a"
@@ -45,16 +40,8 @@ private const val SEARCH_PAGINATION = 20
  */
 class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistAdapter.ActionInterface {
 
-    private lateinit var artistRv: RecyclerView
     private lateinit var artistAdapter: ArtistAdapter
-    private lateinit var toolbar: Toolbar
     private lateinit var linearLayoutManager: LinearLayoutManager
-    private lateinit var progressBar: ProgressBar
-    private lateinit var stateTv: TextView
-    private lateinit var container: ConstraintLayout
-    private lateinit var searchEt: EditText
-    private lateinit var searchBtn: ImageButton
-    private lateinit var clearBtn: ImageButton
 
     private val artistViewModel: ArtistViewModel by activityViewModels()
     private val albumViewModel: AlbumViewModel by activityViewModels()
@@ -77,15 +64,13 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_search_artist, container, false)
-
-        initView(view)
-
-        return view
+        return inflater.inflate(R.layout.fragment_search_artist, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        initView()
 
         // Navigation
         navController = findNavController()
@@ -188,16 +173,8 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         }
     }
 
-    private fun initView(view: View) {
-        artistRv = view.findViewById(R.id.artistRv)
-        toolbar = view.findViewById(R.id.toolbar)
-        progressBar = view.findViewById(R.id.progressBar)
-        stateTv = view.findViewById(R.id.stateTv)
-        container = view.findViewById(R.id.container)
-        searchBtn = view.findViewById(R.id.searchBtn)
-        searchEt = view.findViewById(R.id.searchEt)
-        clearBtn = view.findViewById(R.id.clearBtn)
 
+    private fun initView() {
         progressBar.visibility = View.GONE
         stateTv.visibility = View.GONE
     }

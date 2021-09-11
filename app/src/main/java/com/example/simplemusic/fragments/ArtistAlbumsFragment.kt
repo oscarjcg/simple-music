@@ -27,6 +27,7 @@ import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.SongViewModel
+import kotlinx.android.synthetic.main.fragment_artist_albums.*
 import kotlinx.coroutines.launch
 
 private const val SEARCH_PAGINATION = 20
@@ -36,13 +37,8 @@ private const val SEARCH_PAGINATION = 20
  */
 class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
 
-    private lateinit var albumRv: RecyclerView
     private lateinit var albumsAdapter: ArtistAlbumsAdapter
-    private lateinit var toolbar: Toolbar
     private lateinit var linearLayoutManager: LinearLayoutManager
-    private lateinit var progressBar: ProgressBar
-    private lateinit var stateTv: TextView
-    private lateinit var musicVideosBtn: Button
 
     private val args: ArtistAlbumsFragmentArgs by navArgs()
     private val albumViewModel: AlbumViewModel by activityViewModels()
@@ -66,14 +62,12 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_artist_albums, container, false)
-        initView(view)
-
-        return view
+        return inflater.inflate(R.layout.fragment_artist_albums, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initView()
 
         // Navigation
         navController = findNavController()
@@ -142,13 +136,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         requestAlbums(args.artitstId, pagination)
     }
 
-    private fun initView(view: View) {
-        albumRv = view.findViewById(R.id.albumRv)
-        toolbar = view.findViewById(R.id.toolbar)
-        progressBar = view.findViewById(R.id.progressBar)
-        stateTv = view.findViewById(R.id.stateTv)
-        musicVideosBtn = view.findViewById(R.id.musicVideosBtn)
-
+    private fun initView() {
         progressBar.visibility = View.GONE
         stateTv.visibility = View.GONE
     }
