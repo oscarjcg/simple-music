@@ -7,15 +7,12 @@ import com.example.simplemusic.database.dao.SearchDao
 import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.models.stored.search.Search
 import com.example.simplemusic.models.stored.search.SearchResultArtist
-import com.example.simplemusic.utils.BASE_URL
 import com.example.simplemusic.webservices.SearchWebService
-import com.google.gson.GsonBuilder
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
 
 class ArtistRepository(private val apiCacheDao: ApiCacheDao,
-                       private val searchDao: SearchDao) {
+                       private val searchDao: SearchDao,
+                       private val searchWebService: SearchWebService) {
 
     suspend fun getArtists(term: String, limit: Int): List<Artist> {
         val artistsCache = getCache(term, limit)
@@ -25,7 +22,7 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
         // Request
         val searchResponse: SearchResponse
         try {
-            searchResponse = getRetrofit().create(SearchWebService::class.java).getArtists(term, limit)
+            searchResponse = searchWebService.getArtists(term, limit)
         }
         catch (e: Exception) {
             e.printStackTrace()
@@ -98,13 +95,4 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
         searchDao.deleteAllSearch()
     }
 
-    private fun getRetrofit(): Retrofit {
-        val gson = GsonBuilder()
-            .create()
-
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-    }
 }

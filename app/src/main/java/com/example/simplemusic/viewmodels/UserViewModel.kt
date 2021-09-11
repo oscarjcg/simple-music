@@ -1,25 +1,25 @@
 package com.example.simplemusic.viewmodels
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.example.simplemusic.database.AppDatabase
+import androidx.lifecycle.ViewModel
 import com.example.simplemusic.models.stored.DEFAULT_USER_NAME
 import com.example.simplemusic.models.stored.User
 import com.example.simplemusic.repositories.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /**
- * View model for users. Current only a default user.
+ * View model for users. Currently only a default user.
  */
-class UserViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class UserViewModel
+
+    @Inject
+    constructor(
+        private var userRepository : UserRepository
+    ) : ViewModel() {
+
     val user = MutableLiveData<User>()
-
-    private var userRepository : UserRepository
-
-    init {
-        val db = AppDatabase.getDatabase(application)
-        userRepository = UserRepository(db.userDao())
-    }
 
     /**
      * Add a default user if none created. Or finds a default user.

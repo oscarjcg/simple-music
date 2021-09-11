@@ -9,6 +9,7 @@ import androidx.navigation.findNavController
 import com.example.simplemusic.R
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.viewmodels.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -19,6 +20,7 @@ private const val DAY_MS: Long = 86400000
 /**
  * Main activity. Contains entire app changing fragments.
  */
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val albumViewModel: AlbumViewModel by viewModels()

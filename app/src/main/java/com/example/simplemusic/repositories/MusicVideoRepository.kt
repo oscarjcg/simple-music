@@ -11,7 +11,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
 
-class MusicVideoRepository(private val apiCacheDao: ApiCacheDao) {
+class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
+                           private val searchWebService: SearchWebService) {
 
     suspend fun getArtistMusicVideos(term: String, limit: Int): List<MusicVideo> {
         // Check cache and use it if available
@@ -22,7 +23,7 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao) {
         // Request
         val searchResponse: SearchResponse
         try {
-            searchResponse = getRetrofit().create(SearchWebService::class.java).getArtistMusicVideos(term, limit)
+            searchResponse = searchWebService.getArtistMusicVideos(term, limit)
         } catch (e: Exception) {
             e.printStackTrace()
             // In case of error just return no results
@@ -67,13 +68,4 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao) {
         apiCacheDao.deleteAllMusicVideos()
     }
 
-    private fun getRetrofit(): Retrofit {
-        val gson = GsonBuilder()
-            .create()
-
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-    }
 }

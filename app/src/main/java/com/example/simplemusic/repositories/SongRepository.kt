@@ -4,14 +4,11 @@ import android.util.Log
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.models.SearchResponse
-import com.example.simplemusic.utils.BASE_URL
 import com.example.simplemusic.webservices.SearchWebService
-import com.google.gson.GsonBuilder
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
 
-class SongRepository(private val apiCacheDao: ApiCacheDao) {
+class SongRepository(private val apiCacheDao: ApiCacheDao,
+                     private val searchWebService: SearchWebService) {
 
     suspend fun getAlbumSongs(albumId: Long, limit: Int): List<AlbumSong> {
         // Check cache and use it if available
@@ -22,7 +19,7 @@ class SongRepository(private val apiCacheDao: ApiCacheDao) {
         // Start request
         val searchResponse: SearchResponse
         try {
-            searchResponse = getRetrofit().create(SearchWebService::class.java).getAlbumSongs(albumId, limit)
+            searchResponse = searchWebService.getAlbumSongs(albumId, limit)
         } catch (e: Exception) {
             e.printStackTrace()
             // In case of error just return no results
@@ -68,13 +65,4 @@ class SongRepository(private val apiCacheDao: ApiCacheDao) {
         apiCacheDao.deleteAllSongs()
     }
 
-    private fun getRetrofit(): Retrofit {
-        val gson = GsonBuilder()
-            .create()
-
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-    }
 }

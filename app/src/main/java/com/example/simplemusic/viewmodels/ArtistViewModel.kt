@@ -3,25 +3,27 @@ package com.example.simplemusic.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.database.AppDatabase
 import com.example.simplemusic.repositories.ArtistRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /**
  * View model for artists.
  */
-class ArtistViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class ArtistViewModel
+    @Inject
+    constructor(
+        private val artistRepository: ArtistRepository
+    ) : ViewModel() {
     val artists = MutableLiveData<List<Artist>>()
-    private val artistRepository: ArtistRepository
 
     // UI
     var searchedArtist: String? = null
     var searchingArtist: Boolean = false
-
-    init {
-        val db = AppDatabase.getDatabase(application)
-        artistRepository = ArtistRepository(db.apiCacheDao(), db.searchDao())
-    }
 
     suspend fun searchArtist(term: String, limit: Int) {
         searchedArtist = term
