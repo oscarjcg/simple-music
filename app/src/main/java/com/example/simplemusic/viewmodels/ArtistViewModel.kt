@@ -24,15 +24,25 @@ class ArtistViewModel
     // UI
     var searchedArtist: String? = null
     var searchingArtist: Boolean = false
+    var anim = false
 
-    suspend fun searchArtist(term: String, limit: Int) {
+    suspend fun searchArtist(term: String) {
         searchedArtist = term
         searchingArtist = true
-        artists.value = artistRepository.getArtists(term, limit)
+        artists.value = artistRepository.getArtists(term)
     }
 
     suspend fun deleteAll() {
         artistRepository.deleteAll()
         artistRepository.deleteAllSearch()
+    }
+
+    fun resetPagination() {
+        artistRepository.resetPagination()
+    }
+
+    fun canGetMoreData(): Boolean {
+        val size = artists.value?.size ?: Int.MAX_VALUE
+        return artistRepository.pagination <= size
     }
 }

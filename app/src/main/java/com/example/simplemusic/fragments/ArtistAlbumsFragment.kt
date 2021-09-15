@@ -30,8 +30,6 @@ import com.example.simplemusic.viewmodels.SongViewModel
 import kotlinx.android.synthetic.main.fragment_artist_albums.*
 import kotlinx.coroutines.launch
 
-private const val SEARCH_PAGINATION = 20
-
 /**
  * Shows albums from an artist.
  */
@@ -44,12 +42,6 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     private val albumViewModel: AlbumViewModel by activityViewModels()
     private val songViewModel: SongViewModel by activityViewModels()
     private lateinit var navController: NavController
-    // List scroll
-    private var recyclerViewState: Parcelable? = null
-    private var pagination = SEARCH_PAGINATION
-
-    private var waitShare = false
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +53,8 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        albumViewModel.resetPagination()
+
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_artist_albums, container, false)
     }
@@ -76,55 +70,13 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         setToolbar()
 
         // Observe when albums ready
-        albumViewModel.albums.observe(viewLifecycleOwner, { albums ->
-            // Request indicators off
-            progressBar.visibility = View.GONE
-            albumViewModel.searchingAlbums = false
-            stateTv.visibility = View.GONE
-
-            // Update artists data
-            albumsAdapter.setAlbums(albums)
-
-            // Restore list scroll
-            albumRv.layoutManager?.onRestoreInstanceState(recyclerViewState);
-
-            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
-            if (albums.isEmpty()) {
-                stateTv.visibility = View.VISIBLE
-                stateTv.text = getText(R.string.no_results)
-
-                // Check if it is because internet
-                if (context?.let { Connectivity.isOnline(it) } == false) {
-                    Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
-                }
-
-            } else {
-                stateTv.visibility = View.GONE
-            }
-        })
+        observeAlbums()
 
         // Init album list empty
         initEmptyList()
 
         // Listener. At end of list request more albums data
-        albumRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-
-                val size = albumViewModel.albums.value?.size ?: Int.MAX_VALUE
-                // If end of list and there is data to continue
-                if (!recyclerView.canScrollVertically(1) && pagination <= size) {
-                    if (!albumViewModel.searchingAlbums) {
-                        // Save list scroll data
-                        recyclerViewState = (albumRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
-
-                        // Request more albums data
-                        pagination += SEARCH_PAGINATION
-                        requestAlbums(args.artitstId, pagination)
-                    }
-                }
-            }
-        })
+        albumListOnEndListener()
 
         // Go to music videos
         musicVideosBtn.setOnClickListener {
@@ -133,7 +85,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         }
 
         // Start fetching albums
-        requestAlbums(args.artitstId, pagination)
+        requestAlbums(args.artitstId)
     }
 
     private fun initView() {
@@ -152,12 +104,60 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     private fun setToolbar() {
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
-        toolbar.setupWithNavController( navHostFragment)
+        toolbar.setupWithNavController(navHostFragment)
         // Title
         toolbar.title = albumViewModel.searchedArtist
 
         setHasOptionsMenu(true)
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
+    }
+
+    private fun observeAlbums() {
+        albumViewModel.albums.observe(viewLifecycleOwner, { albums ->
+            // Request indicators off
+            progressBar.visibility = View.GONE
+            albumViewModel.searchingAlbums = false
+            stateTv.visibility = View.GONE
+
+            // Update artists data
+            albumsAdapter.setAlbums(albums)
+
+            // Restore list scroll
+            albumRv.layoutManager?.onRestoreInstanceState(albumViewModel.recyclerViewState);
+
+            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+            if (albums.isEmpty()) {
+                stateTv.visibility = View.VISIBLE
+                stateTv.text = getText(R.string.no_results)
+
+                // Check if it is because internet
+                if (context?.let { Connectivity.isOnline(it) } == false) {
+                    Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
+                }
+
+            } else {
+                stateTv.visibility = View.GONE
+            }
+        })
+    }
+
+    private fun albumListOnEndListener() {
+        albumRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+
+                // If end of list and there is data to continue
+                if (!recyclerView.canScrollVertically(1) && albumViewModel.canGetMoreData()) {
+                    if (!albumViewModel.searchingAlbums) {
+                        // Save list scroll data
+                        albumViewModel.recyclerViewState = (albumRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
+
+                        // Request more albums data
+                        requestAlbums(args.artitstId)
+                    }
+                }
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -169,7 +169,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_share -> {
-                waitShare = true
+                albumViewModel.waitShare = true
                 Toast.makeText(activity, R.string.select_album, Toast.LENGTH_SHORT).show()
                 return true
             }
@@ -181,12 +181,12 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     /**
      * Start request to get albums.
      */
-    private fun requestAlbums(artistId: Int, pagination: Int) {
+    private fun requestAlbums(artistId: Int) {
         progressBar.visibility = View.VISIBLE
 
         // Start request
         lifecycleScope.launch {
-            albumViewModel.searchArtistAlbum(artistId,pagination)
+            albumViewModel.searchArtistAlbum(artistId)
         }
     }
 
@@ -194,8 +194,8 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
      * Click album. Goes to album songs or share it.
      */
     override fun onClickAlbum(album: ArtistAlbum) {
-        if (waitShare) {
-            waitShare = false
+        if (albumViewModel.waitShare) {
+            albumViewModel.waitShare = false
             // Share artist and album
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND

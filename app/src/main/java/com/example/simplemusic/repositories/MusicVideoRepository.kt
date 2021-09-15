@@ -11,19 +11,33 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
 
+private const val PAGINATION = 20
+
 class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
                            private val searchWebService: SearchWebService) {
 
-    suspend fun getArtistMusicVideos(term: String, limit: Int): List<MusicVideo> {
+    var pagination = 0
+
+    fun resetPagination() {
+        pagination = 0
+    }
+
+    fun addPagination() {
+        pagination += PAGINATION
+    }
+
+    suspend fun getArtistMusicVideos(term: String): List<MusicVideo> {
+        addPagination()
+
         // Check cache and use it if available
-        val musicVideosCache = getCache(term, limit)
+        val musicVideosCache = getCache(term, pagination)
         if (musicVideosCache != null)
             return musicVideosCache
 
         // Request
         val searchResponse: SearchResponse
         try {
-            searchResponse = searchWebService.getArtistMusicVideos(term, limit)
+            searchResponse = searchWebService.getArtistMusicVideos(term, pagination)
         } catch (e: Exception) {
             e.printStackTrace()
             // In case of error just return no results
@@ -32,9 +46,10 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
 
         // Filter. Only artist
         val musicVideos = searchResponse.results?.filterIsInstance<MusicVideo>() as ArrayList<MusicVideo>
+        Log.println(Log.ERROR, "DEBUG", "request ${musicVideos.size}")//
 
         // Save to cache with cache info
-        saveCache(term, limit, musicVideos)
+        saveCache(term, pagination, musicVideos)
 
         return musicVideos
     }

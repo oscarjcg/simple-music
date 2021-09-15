@@ -27,8 +27,6 @@ import com.example.simplemusic.viewmodels.MusicVideoViewModel
 import kotlinx.android.synthetic.main.fragment_artist_music_videos.*
 import kotlinx.coroutines.launch
 
-private const val SEARCH_PAGINATION = 20
-
 /**
  * Shows a music video list. It can play videos.
  */
@@ -40,11 +38,6 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     private val musicVideoViewModel: MusicVideoViewModel by activityViewModels()
     private val args: ArtistAlbumsFragmentArgs by navArgs()
     private lateinit var musicVideosAdapter: ArtistMusicVideosAdapter
-    // List scroll
-    private var recyclerViewState: Parcelable? = null
-    private var pagination = SEARCH_PAGINATION
-
-    private var waitShare = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +49,8 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        musicVideoViewModel.resetPagination()
+
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_artist_music_videos, container, false)
     }
@@ -78,7 +73,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
             musicVideosAdapter.setMusicVideos(musicVideos)
 
             // Restore list scroll
-            musicVideosRv.layoutManager?.onRestoreInstanceState(recyclerViewState)
+            musicVideosRv.layoutManager?.onRestoreInstanceState(musicVideoViewModel.recyclerViewState)
 
             if (musicVideos.isEmpty()) {
                 stateTv.text = getText(R.string.no_results)
@@ -105,14 +100,13 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
 
                 val size = musicVideoViewModel.musicVideos.value?.size ?: Int.MAX_VALUE
                 // If end of list and there is data to continue
-                if (!recyclerView.canScrollVertically(1) && pagination <= size) {
+                if (!recyclerView.canScrollVertically(1) && musicVideoViewModel.canGetMoreData()) {
                     if (!musicVideoViewModel.searchingMusicVideos) {
                         // Save list scroll data
-                        recyclerViewState = (musicVideosRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
+                        musicVideoViewModel.recyclerViewState = (musicVideosRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
 
                         // Request more albums data
-                        pagination += SEARCH_PAGINATION
-                        albumViewModel.searchedArtist?.let { requestMusicVideos(it, pagination) }
+                        albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
                     }
                 }
             }
@@ -124,7 +118,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         }
 
         // Start fetching music videos
-        albumViewModel.searchedArtist?.let { requestMusicVideos(it, pagination) }
+        albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
     }
 
     private fun initView() {
@@ -153,7 +147,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_share -> {
-                waitShare = true
+                musicVideoViewModel.waitShare = true
                 Toast.makeText(activity, R.string.select_music_video, Toast.LENGTH_SHORT).show()
                 return true
             }
@@ -173,12 +167,12 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     /**
      * Start request to get music videos.
      */
-    private fun requestMusicVideos(artistName: String, pagination: Int) {
+    private fun requestMusicVideos(artistName: String) {
         progressBar.visibility = View.VISIBLE
 
         // Start request
         lifecycleScope.launch {
-            musicVideoViewModel.searchArtistMusicVideos(artistName, pagination)
+            musicVideoViewModel.searchArtistMusicVideos(artistName)
         }
     }
 
@@ -186,8 +180,8 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
      * Click video to share.
      */
     override fun onClickMusicVideo(musicVideo: MusicVideo) {
-        if (waitShare) {
-            waitShare = false
+        if (musicVideoViewModel.waitShare) {
+            musicVideoViewModel.waitShare = false
             // Share artist and music video
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND

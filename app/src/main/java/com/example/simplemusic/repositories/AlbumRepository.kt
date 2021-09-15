@@ -7,20 +7,33 @@ import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.webservices.SearchWebService
 import java.lang.Exception
 
+private const val PAGINATION = 20
+
 class AlbumRepository(private val apiCacheDao: ApiCacheDao,
                       private val searchWebService: SearchWebService) {
 
-    suspend fun getArtistAlbums(artistId: Int, limit: Int): List<ArtistAlbum> {
+    var pagination = 0
+
+    fun resetPagination() {
+        pagination = 0
+    }
+
+    fun addPagination() {
+        pagination += PAGINATION
+    }
+
+    suspend fun getArtistAlbums(artistId: Int): List<ArtistAlbum> {
+        addPagination()
 
         // Check cache and use it if available
-        var albumsCache = getCache(artistId, limit)
+        var albumsCache = getCache(artistId, pagination)
         if (albumsCache != null)
             return albumsCache
 
         // Start request
         val searchResponse: SearchResponse
         try {
-            searchResponse = searchWebService.getArtistAlbums(artistId, limit)
+            searchResponse = searchWebService.getArtistAlbums(artistId, pagination)
         } catch (e: Exception) {
             e.printStackTrace()
             // In case of error just return no results
@@ -32,7 +45,7 @@ class AlbumRepository(private val apiCacheDao: ApiCacheDao,
         Log.println(Log.ERROR, "DEBUG", "request ${albums.size}")//
 
         // Save to cache
-        saveCache(artistId, limit, albums)
+        saveCache(artistId, pagination, albums)
 
         return albums
     }
