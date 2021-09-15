@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -31,13 +30,10 @@ import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.UserViewModel
 import kotlinx.android.synthetic.main.fragment_search_artist.*
 
-
-private const val SEARCH_DEFAULT = "a"
-
 /**
  * Shows a search bar and a result list with artists.
  */
-class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistAdapter.ActionInterface {
+class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
     private lateinit var artistAdapter: ArtistAdapter
     private lateinit var linearLayoutManager: LinearLayoutManager
@@ -46,7 +42,6 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
     private val albumViewModel: AlbumViewModel by activityViewModels()
     private val userViewModel: UserViewModel by activityViewModels() // Just init for default user
     private lateinit var navController: NavController
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,11 +134,11 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         }
     }
 
-    fun Fragment.hideKeyboard() {
+    private fun Fragment.hideKeyboard() {
         view?.let { activity?.hideKeyboard(it) }
     }
 
-    fun Context.hideKeyboard(view: View) {
+    private fun Context.hideKeyboard(view: View) {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
@@ -160,13 +155,8 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
         val config = AppBarConfiguration(navController.graph)
-        toolbar.setupWithNavController( navHostFragment, config)
+        toolbar.setupWithNavController(navHostFragment, config)
 
-        // Menu which contains a search view
-        /*
-        setHasOptionsMenu(true)
-        (activity as AppCompatActivity).setSupportActionBar(toolbar)
-         */
         // Hide title
         (requireActivity() as MainActivity).title = ""
     }
@@ -175,12 +165,6 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         // Search as icon that deploys an input
         inflater.inflate(R.menu.menu, menu)
-        val menuItem = menu.findItem(R.id.action_search)
-        val searchView = menuItem?.actionView as SearchView
-
-        searchView.isIconified = true
-        searchView.setOnQueryTextListener(this)
-
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -300,29 +284,6 @@ class SearchArtistFragment : Fragment(), SearchView.OnQueryTextListener, ArtistA
                 }
             }
         })
-    }
-
-    /**
-     * Toolbar. Search after submit
-     */
-    override fun onQueryTextSubmit(query: String?): Boolean {
-        return true
-    }
-
-    /**
-     * Toolbar. Search after each letter
-     */
-    override fun onQueryTextChange(newText: String?): Boolean {
-        if (newText != null) {
-            if (newText.isEmpty()) {
-                // Default search when no text
-                requestSearch(SEARCH_DEFAULT)
-            } else {
-                requestSearch(newText)
-            }
-        }
-
-        return true
     }
 
     /**
