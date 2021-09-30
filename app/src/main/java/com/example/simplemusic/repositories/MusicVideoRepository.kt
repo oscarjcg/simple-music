@@ -5,6 +5,7 @@ import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.utils.BASE_URL
+import com.example.simplemusic.webservices.MusicVideoWebService
 import com.example.simplemusic.webservices.SearchWebService
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
@@ -14,7 +15,7 @@ import java.lang.Exception
 private const val PAGINATION = 20
 
 class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
-                           private val searchWebService: SearchWebService) {
+                           private val musicVideoWebService: MusicVideoWebService) {
 
     var pagination = 0
 
@@ -37,7 +38,7 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
         // Request
         val searchResponse: SearchResponse
         try {
-            searchResponse = searchWebService.getArtistMusicVideos(term, pagination)
+            searchResponse = musicVideoWebService.getArtistMusicVideos(term, pagination)
         } catch (e: Exception) {
             e.printStackTrace()
             // In case of error just return no results

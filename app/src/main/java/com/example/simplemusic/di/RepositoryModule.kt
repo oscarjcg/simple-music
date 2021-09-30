@@ -4,7 +4,10 @@ import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.database.dao.SearchDao
 import com.example.simplemusic.database.dao.UserDao
 import com.example.simplemusic.repositories.*
+import com.example.simplemusic.webservices.AlbumWebService
+import com.example.simplemusic.webservices.MusicVideoWebService
 import com.example.simplemusic.webservices.SearchWebService
+import com.example.simplemusic.webservices.SongWebService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,9 +25,9 @@ object RepositoryModule {
     @Provides
     fun provideAlbumRepository(
         apiCacheDao: ApiCacheDao,
-        searchWebService: SearchWebService
+        albumWebService: AlbumWebService
     ): AlbumRepository {
-        return AlbumRepository(apiCacheDao, searchWebService)
+        return AlbumRepository(apiCacheDao, albumWebService)
     }
 
     @Singleton
@@ -41,18 +44,18 @@ object RepositoryModule {
     @Provides
     fun provideMusicVideoRepository(
         apiCacheDao: ApiCacheDao,
-        searchWebService: SearchWebService
+        musicVideoWebService: MusicVideoWebService
     ): MusicVideoRepository {
-        return MusicVideoRepository(apiCacheDao, searchWebService)
+        return MusicVideoRepository(apiCacheDao, musicVideoWebService)
     }
 
     @Singleton
     @Provides
     fun provideSongRepository(
         apiCacheDao: ApiCacheDao,
-        searchWebService: SearchWebService
+        songWebService: SongWebService
     ): SongRepository {
-        return SongRepository(apiCacheDao, searchWebService)
+        return SongRepository(apiCacheDao, songWebService)
     }
 
     @Singleton

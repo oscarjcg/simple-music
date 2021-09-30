@@ -1,7 +1,10 @@
 package com.example.simplemusic.di
 
 import com.example.simplemusic.utils.BASE_URL
+import com.example.simplemusic.webservices.AlbumWebService
+import com.example.simplemusic.webservices.MusicVideoWebService
 import com.example.simplemusic.webservices.SearchWebService
+import com.example.simplemusic.webservices.SongWebService
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -39,5 +42,29 @@ object RetrofitModule {
         return retrofit
             .build()
             .create(SearchWebService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAlbumWebService(retrofit: Retrofit.Builder): AlbumWebService {
+        return retrofit
+            .build()
+            .create(AlbumWebService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideMusicVideoWebService(retrofit: Retrofit.Builder): MusicVideoWebService {
+        return retrofit
+            .build()
+            .create(MusicVideoWebService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSongWebService(retrofit: Retrofit.Builder): SongWebService {
+        return retrofit
+            .build()
+            .create(SongWebService::class.java)
     }
 }

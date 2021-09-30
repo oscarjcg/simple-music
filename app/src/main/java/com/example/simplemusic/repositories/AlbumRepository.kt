@@ -4,13 +4,14 @@ import android.util.Log
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.models.SearchResponse
+import com.example.simplemusic.webservices.AlbumWebService
 import com.example.simplemusic.webservices.SearchWebService
 import java.lang.Exception
 
 private const val PAGINATION = 20
 
 class AlbumRepository(private val apiCacheDao: ApiCacheDao,
-                      private val searchWebService: SearchWebService) {
+                      private val albumWebService: AlbumWebService) {
 
     var pagination = 0
 
@@ -33,7 +34,7 @@ class AlbumRepository(private val apiCacheDao: ApiCacheDao,
         // Start request
         val searchResponse: SearchResponse
         try {
-            searchResponse = searchWebService.getArtistAlbums(artistId, pagination)
+            searchResponse = albumWebService.getArtistAlbums(artistId, pagination)
         } catch (e: Exception) {
             e.printStackTrace()
             // In case of error just return no results

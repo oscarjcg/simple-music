@@ -5,14 +5,13 @@ import com.example.simplemusic.utils.*
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-/**
- * Api for searching artist, albums and songs.
- */
-interface SearchWebService {
-
+interface MusicVideoWebService {
     @GET("search")
-    suspend fun getArtists(
+    suspend fun getArtistMusicVideos(
         @Query(PARAM_TERM) term: String,
         @Query(PARAM_LIMIT) limit: Int,
-        @Query(PARAM_ENTITY) entity: String = "musicArtist"): SearchResponse
+        @Query(PARAM_ENTITY) entity: String = "musicVideo",
+        @Query(PARAM_ATTRIBUTE) attribute: String = "allArtistTerm",
+        @Query(PARAM_SORT) sort: String = PARAM_SORT_RECENT
+    ): SearchResponse
 }

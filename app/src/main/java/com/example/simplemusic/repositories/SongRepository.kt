@@ -5,12 +5,13 @@ import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.webservices.SearchWebService
+import com.example.simplemusic.webservices.SongWebService
 import java.lang.Exception
 
 private const val PAGINATION = 20
 
 class SongRepository(private val apiCacheDao: ApiCacheDao,
-                     private val searchWebService: SearchWebService) {
+                     private val songWebService: SongWebService) {
 
     var pagination = 0
 
@@ -33,7 +34,7 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
         // Start request
         val searchResponse: SearchResponse
         try {
-            searchResponse = searchWebService.getAlbumSongs(albumId, pagination)
+            searchResponse = songWebService.getAlbumSongs(albumId, pagination)
         } catch (e: Exception) {
             e.printStackTrace()
             // In case of error just return no results
