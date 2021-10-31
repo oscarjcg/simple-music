@@ -27,13 +27,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.AlbumSongsAdapter
+import com.example.simplemusic.databinding.FragmentAlbumSongsBinding
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.ArtistViewModel
 import com.example.simplemusic.viewmodels.SongViewModel
 import com.example.simplemusic.viewmodels.UserViewModel
-import kotlinx.android.synthetic.main.fragment_album_songs.*
 import kotlinx.coroutines.launch
 
 private const val GRID_SIZE_PORTRAIT = 2
@@ -47,6 +47,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     private lateinit var songsAdapter: AlbumSongsAdapter
     private lateinit var gridLayoutManager: GridLayoutManager
 
+    private lateinit var binding: FragmentAlbumSongsBinding
     private val args: AlbumSongsFragmentArgs by navArgs()
     private lateinit var navController: NavController
     private val songViewModel: SongViewModel by activityViewModels()
@@ -70,8 +71,8 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         songViewModel.resetPagination()
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_album_songs, container, false)
-    }
+        binding = FragmentAlbumSongsBinding.inflate(inflater, container, false)
+        return binding.root    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -96,7 +97,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         loadLikes()
 
         // Click pause button. Stop playing song
-        pauseBtn.setOnClickListener {
+        binding.pauseBtn.setOnClickListener {
             releasePlayer()
         }
 
@@ -105,10 +106,10 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     }
 
     private fun initView() {
-        progressBar.visibility = View.GONE
-        stateTv.visibility = View.GONE
-        playingSongTv.visibility = View.GONE
-        pauseBtn.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        binding.stateTv.visibility = View.GONE
+        binding.playingSongTv.visibility = View.GONE
+        binding.pauseBtn.visibility = View.GONE
     }
 
     private fun initListEmpty() {
@@ -118,19 +119,19 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             gridLayoutManager = GridLayoutManager(activity, GRID_SIZE_PORTRAIT)
         else
             gridLayoutManager = GridLayoutManager(activity, GRID_SIZE_LANDSCAPE)
-        songRv.layoutManager = gridLayoutManager
-        songRv.adapter = songsAdapter
+        binding.songRv.layoutManager = gridLayoutManager
+        binding.songRv.adapter = songsAdapter
     }
 
     private fun setToolbar() {
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
-        toolbar.setupWithNavController( navHostFragment)
+        binding.toolbar.setupWithNavController( navHostFragment)
         // Title
-        toolbar.title = songViewModel.selectedAlbum
+        binding.toolbar.title = songViewModel.selectedAlbum
 
         setHasOptionsMenu(true)
-        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -151,7 +152,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     }
 
     private fun requestSongs(albumId: Long) {
-        progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
         // Start request
         lifecycleScope.launch {
@@ -174,26 +175,26 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     private fun observeSongs() {
         songViewModel.songs.observe(viewLifecycleOwner, { songs ->
             // Request indicators off
-            progressBar.visibility = View.GONE
+            binding.progressBar.visibility = View.GONE
             songViewModel.searchingSongs = false
-            stateTv.visibility = View.GONE
+            binding.stateTv.visibility = View.GONE
 
             // Update songs data
             songsAdapter.setSongs(songs)
 
             // Restore list scroll
-            songRv.layoutManager?.onRestoreInstanceState(songViewModel.recyclerViewState);
+            binding.songRv.layoutManager?.onRestoreInstanceState(songViewModel.recyclerViewState);
 
             if (songs.isEmpty()) {
-                stateTv.text = getText(R.string.no_results)
-                stateTv.visibility = View.VISIBLE
+                binding.stateTv.text = getText(R.string.no_results)
+                binding.stateTv.visibility = View.VISIBLE
 
                 // Check if it is because internet
                 if (context?.let { Connectivity.isOnline(it) } == false) {
                     Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
                 }
             } else {
-                stateTv.visibility = View.GONE
+                binding.stateTv.visibility = View.GONE
             }
 
             //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
@@ -201,7 +202,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     }
 
     private fun songListOnEndListener() {
-        songRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.songRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
@@ -210,7 +211,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
                 if (!recyclerView.canScrollVertically(1) && songViewModel.canGetMoreData()) {
                     if (!songViewModel.searchingSongs) {
                         // Save list scroll data
-                        songViewModel.recyclerViewState = (songRv.layoutManager as GridLayoutManager).onSaveInstanceState()
+                        songViewModel.recyclerViewState = (binding.songRv.layoutManager as GridLayoutManager).onSaveInstanceState()
 
                         // Request more albums data
                         requestSongs(args.albumId)
@@ -254,7 +255,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             releasePlayer()
         }
 
-        progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
         // Start a playing and release on completion
         mediaPlayer = MediaPlayer().apply {
@@ -267,13 +268,13 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             setDataSource(song.previewUrl)
             prepare()
             setOnPreparedListener {
-                progressBar.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
             }
             start()
 
-            playingSongTv.text = song.trackName
-            playingSongTv.visibility = View.VISIBLE
-            pauseBtn.visibility = View.VISIBLE
+            binding.playingSongTv.text = song.trackName
+            binding.playingSongTv.visibility = View.VISIBLE
+            binding.pauseBtn.visibility = View.VISIBLE
         }.also { mp ->
             mp.setOnCompletionListener {
                 releasePlayer()
@@ -306,8 +307,8 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         // Release audio player
         mediaPlayer?.release()
         mediaPlayer = null
-        playingSongTv.visibility = View.GONE
-        pauseBtn.visibility = View.GONE
+        binding.playingSongTv.visibility = View.GONE
+        binding.pauseBtn.visibility = View.GONE
     }
 
     override fun onPause() {

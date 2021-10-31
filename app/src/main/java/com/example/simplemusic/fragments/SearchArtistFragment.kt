@@ -24,11 +24,12 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.doAfterTextChanged
+import com.example.simplemusic.databinding.FragmentArtistMusicVideosBinding
+import com.example.simplemusic.databinding.FragmentSearchArtistBinding
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.UserViewModel
-import kotlinx.android.synthetic.main.fragment_search_artist.*
 
 /**
  * Shows a search bar and a result list with artists.
@@ -38,6 +39,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
     private lateinit var artistAdapter: ArtistAdapter
     private lateinit var linearLayoutManager: LinearLayoutManager
 
+    private lateinit var binding: FragmentSearchArtistBinding
     private val artistViewModel: ArtistViewModel by activityViewModels()
     private val albumViewModel: AlbumViewModel by activityViewModels()
     private val userViewModel: UserViewModel by activityViewModels() // Just init for default user
@@ -56,7 +58,8 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
         artistViewModel.resetPagination()
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search_artist, container, false)
+        binding = FragmentSearchArtistBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -93,43 +96,43 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
 
     private fun initView() {
-        progressBar.visibility = View.GONE
-        stateTv.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        binding.stateTv.visibility = View.GONE
         artistViewModel.anim = false
     }
 
     private fun initEmptyList() {
         artistAdapter = ArtistAdapter(ArrayList(), this)
         linearLayoutManager = LinearLayoutManager(context)
-        artistRv.layoutManager = linearLayoutManager
-        artistRv.adapter = artistAdapter
+        binding.artistRv.layoutManager = linearLayoutManager
+        binding.artistRv.adapter = artistAdapter
     }
 
     private fun searchListener() {
         // Search after each letter
-        searchEt.doAfterTextChanged {
+        binding.searchEt.doAfterTextChanged {
             resetPagination()
-            requestSearch(searchEt.text.toString())
+            requestSearch(binding.searchEt.text.toString())
         }
 
         // Search
-        searchBtn.setOnClickListener {
+        binding.searchBtn.setOnClickListener {
             if (!artistViewModel.anim) {
                 resetPagination()
                 hideKeyboard()
-                animateButtonPressed(searchBtn)
-                requestSearch(searchEt.text.toString())
+                animateButtonPressed(binding.searchBtn)
+                requestSearch(binding.searchEt.text.toString())
             }
         }
     }
 
     private fun clearListener() {
-        clearBtn.setOnClickListener {
+        binding.clearBtn.setOnClickListener {
             if (!artistViewModel.anim) {
                 resetPagination()
                 hideKeyboard()
-                animateButtonPressed(clearBtn)
-                searchEt.text.clear()
+                animateButtonPressed(binding.clearBtn)
+                binding.searchEt.text.clear()
             }
         }
     }
@@ -147,7 +150,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      * Set list to top and resets pagination.
      */
     private fun resetPagination() {
-        artistRv.scrollToPosition(0)
+        binding.artistRv.scrollToPosition(0)
         artistViewModel.resetPagination()
     }
 
@@ -155,7 +158,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
         val config = AppBarConfiguration(navController.graph)
-        toolbar.setupWithNavController(navHostFragment, config)
+        binding.toolbar.setupWithNavController(navHostFragment, config)
 
         // Hide title
         (requireActivity() as MainActivity).title = ""
@@ -172,12 +175,12 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      * Start a search with a limit of results
      */
     private fun requestSearch(search: String) {
-            progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
-            // Start request
-            lifecycleScope.launch {
-                artistViewModel.searchArtist(search)
-            }
+        // Start request
+        lifecycleScope.launch {
+            artistViewModel.searchArtist(search)
+        }
     }
 
     /**
@@ -185,11 +188,11 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      */
     private fun searchBarCenter() {
         // Move search bar to center
-        TransitionManager.beginDelayedTransition(container)
+        TransitionManager.beginDelayedTransition(binding.container)
         val constraintSet = ConstraintSet()
-        constraintSet.clone(container)
+        constraintSet.clone(binding.container)
         constraintSet.connect(R.id.searchContainer, ConstraintSet.BOTTOM, R.id.container, ConstraintSet.BOTTOM)
-        container.setConstraintSet(constraintSet)
+        binding.container.setConstraintSet(constraintSet)
     }
 
     /**
@@ -197,11 +200,11 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      */
     private fun searchBarTop() {
         // Move search bar up
-        TransitionManager.beginDelayedTransition(container)
+        TransitionManager.beginDelayedTransition(binding.container)
         val constraintSet = ConstraintSet()
-        constraintSet.clone(container)
+        constraintSet.clone(binding.container)
         constraintSet.clear(R.id.searchContainer, ConstraintSet.BOTTOM)
-        container.setConstraintSet(constraintSet)
+        binding.container.setConstraintSet(constraintSet)
     }
 
     /**
@@ -231,25 +234,25 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
     private fun observeArtists() {
         artistViewModel.artists.observe(viewLifecycleOwner, { artists ->
             // Request indicators off
-            progressBar.visibility = View.GONE
+            binding.progressBar.visibility = View.GONE
             artistViewModel.searchingArtist = false
-            stateTv.visibility = View.GONE
+            binding.stateTv.visibility = View.GONE
 
             // Save list scroll data
-            val scroll = artistRv.layoutManager?.onSaveInstanceState()
+            val scroll = binding.artistRv.layoutManager?.onSaveInstanceState()
 
             // Update artists data
             artistAdapter.setArtists(artists)
 
             // Restore list scroll
-            artistRv.layoutManager?.onRestoreInstanceState(scroll)
+            binding.artistRv.layoutManager?.onRestoreInstanceState(scroll)
 
             // If there are results, the artist list will be at the center
             if (artists.isEmpty()) {
                 // Trying to search something but no results
-                if (searchEt.text.isNotEmpty()) {
-                    stateTv.visibility = View.VISIBLE
-                    stateTv.text = getText(R.string.no_results)
+                if (binding.searchEt.text.isNotEmpty()) {
+                    binding.stateTv.visibility = View.VISIBLE
+                    binding.stateTv.text = getText(R.string.no_results)
                 }
                 // Move search bar down
                 searchBarCenter()
@@ -259,7 +262,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
                     Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
                 }
             } else {
-                stateTv.visibility = View.GONE
+                binding.stateTv.visibility = View.GONE
                 // Move search bar up
                 searchBarTop()
             }
@@ -267,7 +270,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
     }
 
     private fun artistListOnEndListener() {
-        artistRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.artistRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 

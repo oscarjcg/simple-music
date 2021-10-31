@@ -1,76 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    style="@style/ContainerContent"
-    tools:context=".fragments.ArtistMusicVideosFragment" >
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <data>
+        <variable
+            name="albumViewModel"
+            type="com.example.simplemusic.viewmodels.MusicVideoViewModel"/>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent"
+        style="@style/ContainerContent"
+        tools:context=".fragments.ArtistMusicVideosFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/musicVideosRv"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <VideoView
-        android:id="@+id/videoView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="16:9"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-         />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/musicVideosRv"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
-    <ImageButton
-        android:id="@+id/closeBtn"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:adjustViewBounds="false"
-        android:background="@drawable/round_corner"
-        android:cropToPadding="true"
-        android:padding="4dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_close"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/videoView"/>
+        <VideoView
+            android:id="@+id/videoView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageButton
+            android:id="@+id/closeBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:adjustViewBounds="false"
+            android:background="@drawable/round_corner"
+            android:cropToPadding="true"
+            android:padding="4dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_close"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/videoView" />
 
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toTopOf="@+id/musicVideosRv"
-        app:layout_constraintEnd_toEndOf="@+id/musicVideosRv"
-        app:layout_constraintStart_toStartOf="@+id/musicVideosRv"
-        app:layout_constraintBottom_toBottomOf="@+id/musicVideosRv" />
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toTopOf="@+id/musicVideosRv"
+            app:layout_constraintEnd_toEndOf="@+id/musicVideosRv"
+            app:layout_constraintStart_toStartOf="@+id/musicVideosRv"
+            app:layout_constraintBottom_toBottomOf="@+id/musicVideosRv" />
 
-    <TextView
-        android:id="@+id/stateTv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="State"
-        android:textSize="34sp"
-        style="@style/TextAccent"
-        app:layout_constraintBottom_toBottomOf="@+id/musicVideosRv"
-        app:layout_constraintEnd_toEndOf="@+id/musicVideosRv"
-        app:layout_constraintStart_toStartOf="@+id/musicVideosRv"
-        app:layout_constraintTop_toTopOf="@+id/musicVideosRv" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/stateTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="State"
+            android:textSize="34sp"
+            style="@style/TextAccent"
+            app:layout_constraintBottom_toBottomOf="@+id/musicVideosRv"
+            app:layout_constraintEnd_toEndOf="@+id/musicVideosRv"
+            app:layout_constraintStart_toStartOf="@+id/musicVideosRv"
+            app:layout_constraintTop_toTopOf="@+id/musicVideosRv" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

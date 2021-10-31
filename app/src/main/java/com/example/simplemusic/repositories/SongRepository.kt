@@ -4,7 +4,6 @@ import android.util.Log
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.models.SearchResponse
-import com.example.simplemusic.webservices.SearchWebService
 import com.example.simplemusic.webservices.SongWebService
 import java.lang.Exception
 
@@ -15,19 +14,11 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
 
     var pagination = 0
 
-    fun resetPagination() {
-        pagination = 0
-    }
-
-    fun addPagination() {
-        pagination += PAGINATION
-    }
-
     suspend fun getAlbumSongs(albumId: Long): List<AlbumSong> {
         addPagination()
 
         // Check cache and use it if available
-        var songsCache = getCache(albumId, pagination)
+        val songsCache = getCache(albumId, pagination)
         if (songsCache != null)
             return songsCache
 
@@ -43,12 +34,20 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
 
         // Filter. Only songs
         val songs = searchResponse.results?.filterIsInstance<AlbumSong>() as ArrayList<AlbumSong>
-        Log.println(Log.ERROR, "DEBUG", "request ${songs.size}")//
+        //Log.println(Log.ERROR, "DEBUG", "request ${songs.size}")//
 
         // Save to cache with cache info
         saveCache(albumId, pagination, songs)
 
         return songs
+    }
+
+    fun resetPagination() {
+        pagination = 0
+    }
+
+    private fun addPagination() {
+        pagination += PAGINATION
     }
 
     private suspend fun getCache(albumId: Long, limit: Int): List<AlbumSong>?  {
@@ -58,7 +57,7 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
         // so the first one is enough to check
         if (songsCache.isNotEmpty() && limit <= songsCache[0].limit!!) {
             songsCache = apiCacheDao.getAlbumOwnerSongs(albumId, limit)
-            Log.println(Log.ERROR, "DEBUG", "cache ${songsCache.size}")//
+            //Log.println(Log.ERROR, "DEBUG", "cache ${songsCache.size}")//
             return songsCache
         }
         return null

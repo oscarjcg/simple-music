@@ -23,11 +23,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.adapters.ArtistAlbumsAdapter
+import com.example.simplemusic.databinding.FragmentArtistAlbumsBinding
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.SongViewModel
-import kotlinx.android.synthetic.main.fragment_artist_albums.*
+//import kotlinx.android.synthetic.main.fragment_artist_albums.*
 import kotlinx.coroutines.launch
 
 /**
@@ -38,6 +39,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     private lateinit var albumsAdapter: ArtistAlbumsAdapter
     private lateinit var linearLayoutManager: LinearLayoutManager
 
+    private lateinit var binding: FragmentArtistAlbumsBinding
     private val args: ArtistAlbumsFragmentArgs by navArgs()
     private val albumViewModel: AlbumViewModel by activityViewModels()
     private val songViewModel: SongViewModel by activityViewModels()
@@ -56,7 +58,8 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         albumViewModel.resetPagination()
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_artist_albums, container, false)
+        binding = FragmentArtistAlbumsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -79,7 +82,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         albumListOnEndListener()
 
         // Go to music videos
-        musicVideosBtn.setOnClickListener {
+        binding.musicVideosBtn.setOnClickListener {
             val action = ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToArtistMusicVideosFragment()
             navController.navigate(action)
         }
@@ -89,46 +92,46 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     }
 
     private fun initView() {
-        progressBar.visibility = View.GONE
-        stateTv.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        binding.stateTv.visibility = View.GONE
     }
 
     private fun initEmptyList() {
         // Init album list empty
         albumsAdapter = ArtistAlbumsAdapter(ArrayList(), this)
         linearLayoutManager = LinearLayoutManager(activity)
-        albumRv.layoutManager = linearLayoutManager
-        albumRv.adapter = albumsAdapter
+        binding.albumRv.layoutManager = linearLayoutManager
+        binding.albumRv.adapter = albumsAdapter
     }
 
     private fun setToolbar() {
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
-        toolbar.setupWithNavController(navHostFragment)
+        binding.toolbar.setupWithNavController(navHostFragment)
         // Title
-        toolbar.title = albumViewModel.searchedArtist
+        binding.toolbar.title = albumViewModel.searchedArtist
 
         setHasOptionsMenu(true)
-        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
     }
 
     private fun observeAlbums() {
         albumViewModel.albums.observe(viewLifecycleOwner, { albums ->
             // Request indicators off
-            progressBar.visibility = View.GONE
+            binding.progressBar.visibility = View.GONE
             albumViewModel.searchingAlbums = false
-            stateTv.visibility = View.GONE
+            binding.stateTv.visibility = View.GONE
 
             // Update artists data
             albumsAdapter.setAlbums(albums)
 
             // Restore list scroll
-            albumRv.layoutManager?.onRestoreInstanceState(albumViewModel.recyclerViewState);
+            binding.albumRv.layoutManager?.onRestoreInstanceState(albumViewModel.recyclerViewState);
 
             //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
             if (albums.isEmpty()) {
-                stateTv.visibility = View.VISIBLE
-                stateTv.text = getText(R.string.no_results)
+                binding.stateTv.visibility = View.VISIBLE
+                binding.stateTv.text = getText(R.string.no_results)
 
                 // Check if it is because internet
                 if (context?.let { Connectivity.isOnline(it) } == false) {
@@ -136,13 +139,13 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
                 }
 
             } else {
-                stateTv.visibility = View.GONE
+                binding.stateTv.visibility = View.GONE
             }
         })
     }
 
     private fun albumListOnEndListener() {
-        albumRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.albumRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
@@ -150,7 +153,8 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
                 if (!recyclerView.canScrollVertically(1) && albumViewModel.canGetMoreData()) {
                     if (!albumViewModel.searchingAlbums) {
                         // Save list scroll data
-                        albumViewModel.recyclerViewState = (albumRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
+                        albumViewModel.recyclerViewState =
+                            (binding.albumRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
 
                         // Request more albums data
                         requestAlbums(args.artitstId)
@@ -182,7 +186,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
      * Start request to get albums.
      */
     private fun requestAlbums(artistId: Int) {
-        progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
         // Start request
         lifecycleScope.launch {

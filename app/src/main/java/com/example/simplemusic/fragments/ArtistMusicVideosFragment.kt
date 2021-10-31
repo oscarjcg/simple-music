@@ -20,11 +20,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.adapters.ArtistAlbumsAdapter
 import com.example.simplemusic.adapters.ArtistMusicVideosAdapter
+import com.example.simplemusic.databinding.FragmentArtistMusicVideosBinding
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.MusicVideoViewModel
-import kotlinx.android.synthetic.main.fragment_artist_music_videos.*
 import kotlinx.coroutines.launch
 
 /**
@@ -34,6 +34,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
 
     private lateinit var linearLayoutManager: LinearLayoutManager
 
+    private lateinit var binding: FragmentArtistMusicVideosBinding
     private val albumViewModel: AlbumViewModel by activityViewModels()
     private val musicVideoViewModel: MusicVideoViewModel by activityViewModels()
     private val args: ArtistAlbumsFragmentArgs by navArgs()
@@ -52,7 +53,8 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         musicVideoViewModel.resetPagination()
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_artist_music_videos, container, false)
+        binding = FragmentArtistMusicVideosBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,26 +67,26 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         // Observe when music videos ready
         musicVideoViewModel.musicVideos.observe(viewLifecycleOwner, { musicVideos ->
             // Request indicators off
-            progressBar.visibility = View.GONE
+            binding.progressBar.visibility = View.GONE
             musicVideoViewModel.searchingMusicVideos = false
-            stateTv.visibility = View.GONE
+            binding.stateTv.visibility = View.GONE
 
             // Update artists data
             musicVideosAdapter.setMusicVideos(musicVideos)
 
             // Restore list scroll
-            musicVideosRv.layoutManager?.onRestoreInstanceState(musicVideoViewModel.recyclerViewState)
+            binding.musicVideosRv.layoutManager?.onRestoreInstanceState(musicVideoViewModel.recyclerViewState)
 
             if (musicVideos.isEmpty()) {
-                stateTv.text = getText(R.string.no_results)
-                stateTv.visibility = View.VISIBLE
+                binding.stateTv.text = getText(R.string.no_results)
+                binding.stateTv.visibility = View.VISIBLE
 
                 // Check if it is because internet
                 if (context?.let { Connectivity.isOnline(it) } == false) {
                     Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
                 }
             } else {
-                stateTv.visibility = View.GONE
+                binding.stateTv.visibility = View.GONE
             }
 
             //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
@@ -94,7 +96,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         initEmptyList()
 
         // Listener. At end of list request more music videos data
-        musicVideosRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.musicVideosRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
@@ -103,7 +105,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
                 if (!recyclerView.canScrollVertically(1) && musicVideoViewModel.canGetMoreData()) {
                     if (!musicVideoViewModel.searchingMusicVideos) {
                         // Save list scroll data
-                        musicVideoViewModel.recyclerViewState = (musicVideosRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
+                        musicVideoViewModel.recyclerViewState = (binding.musicVideosRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
 
                         // Request more albums data
                         albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
@@ -113,7 +115,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         })
 
         // Click close button when playing video
-        closeBtn.setOnClickListener {
+        binding.closeBtn.setOnClickListener {
             closeVideoPlayer()
         }
 
@@ -122,21 +124,21 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     }
 
     private fun initView() {
-        progressBar.visibility = View.GONE
-        stateTv.visibility = View.GONE
-        videoView.visibility = View.GONE
-        closeBtn.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        binding.stateTv.visibility = View.GONE
+        binding.videoView.visibility = View.GONE
+        binding.closeBtn.visibility = View.GONE
     }
 
     private fun setToolbar() {
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
-        toolbar.setupWithNavController( navHostFragment)
+        binding.toolbar.setupWithNavController( navHostFragment)
         // Title
-        toolbar.title = getString(R.string.music_videos)
+        binding.toolbar.title = getString(R.string.music_videos)
 
         setHasOptionsMenu(true)
-        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -160,15 +162,15 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         // Init music video list empty
         musicVideosAdapter = ArtistMusicVideosAdapter(ArrayList(), this)
         linearLayoutManager = LinearLayoutManager(activity)
-        musicVideosRv.layoutManager = linearLayoutManager
-        musicVideosRv.adapter = musicVideosAdapter
+        binding.musicVideosRv.layoutManager = linearLayoutManager
+        binding.musicVideosRv.adapter = musicVideosAdapter
     }
 
     /**
      * Start request to get music videos.
      */
     private fun requestMusicVideos(artistName: String) {
-        progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
         // Start request
         lifecycleScope.launch {
@@ -211,18 +213,18 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
      */
     private fun showVideoPlayer() {
         // Turn on indicators
-        videoView.visibility = View.VISIBLE
-        progressBar.visibility = View.VISIBLE
-        closeBtn.visibility = View.VISIBLE
+        binding.videoView.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+        binding.closeBtn.visibility = View.VISIBLE
     }
 
     /**
      * Hide ui elements of the video player.
      */
     private fun hideVideoPlayer() {
-        videoView.visibility = View.GONE
-        progressBar.visibility = View.GONE
-        closeBtn.visibility = View.GONE
+        binding.videoView.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        binding.closeBtn.visibility = View.GONE
     }
 
     /**
@@ -234,20 +236,20 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
 
         // Build player
         val uri = Uri.parse(musicVideo.previewUrl)
-        videoView.setMediaController(MediaController(context))
-        videoView.setVideoURI(uri)
-        videoView.requestFocus()
+        binding.videoView.setMediaController(MediaController(context))
+        binding.videoView.setVideoURI(uri)
+        binding.videoView.requestFocus()
 
         // Listeners
-        videoView.setOnPreparedListener {
-            progressBar.visibility = View.GONE
+        binding.videoView.setOnPreparedListener {
+            binding.progressBar.visibility = View.GONE
         }
-        videoView.setOnCompletionListener {
+        binding.videoView.setOnCompletionListener {
             closeVideoPlayer()
         }
 
         // Start
-        videoView.start()
+        binding.videoView.start()
     }
 
     /**
@@ -255,8 +257,8 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
      */
     private fun closeVideoPlayer() {
         // Stop video if it's playing
-        if (videoView.isPlaying)
-            videoView.stopPlayback()
+        if (binding.videoView.isPlaying)
+            binding.videoView.stopPlayback()
         // Turn off indicators
         hideVideoPlayer()
     }
