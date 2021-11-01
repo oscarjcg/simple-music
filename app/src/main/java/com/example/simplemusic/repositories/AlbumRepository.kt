@@ -5,7 +5,6 @@ import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.webservices.AlbumWebService
-import com.example.simplemusic.webservices.SearchWebService
 import java.lang.Exception
 
 private const val PAGINATION = 20
@@ -15,19 +14,11 @@ class AlbumRepository(private val apiCacheDao: ApiCacheDao,
 
     var pagination = 0
 
-    fun resetPagination() {
-        pagination = 0
-    }
-
-    fun addPagination() {
-        pagination += PAGINATION
-    }
-
     suspend fun getArtistAlbums(artistId: Int): List<ArtistAlbum> {
         addPagination()
 
         // Check cache and use it if available
-        var albumsCache = getCache(artistId, pagination)
+        val albumsCache = getCache(artistId, pagination)
         if (albumsCache != null)
             return albumsCache
 
@@ -43,12 +34,20 @@ class AlbumRepository(private val apiCacheDao: ApiCacheDao,
 
         // Filter. Only albums
         val albums = searchResponse.results?.filterIsInstance<ArtistAlbum>() as ArrayList<ArtistAlbum>
-        Log.println(Log.ERROR, "DEBUG", "request ${albums.size}")//
+        //Log.println(Log.ERROR, "DEBUG", "request ${albums.size}")//
 
         // Save to cache
         saveCache(artistId, pagination, albums)
 
         return albums
+    }
+
+    fun resetPagination() {
+        pagination = 0
+    }
+
+    private fun addPagination() {
+        pagination += PAGINATION
     }
 
     private suspend fun getCache(artistId: Int, limit: Int): List<ArtistAlbum>? {
@@ -58,7 +57,7 @@ class AlbumRepository(private val apiCacheDao: ApiCacheDao,
         // so the first one is enough to check
         if (albumsCache.isNotEmpty() && limit <= albumsCache[0].limit!!) {
             albumsCache = apiCacheDao.getArtistOwnerAlbums(artistId, limit)
-            Log.println(Log.ERROR, "DEBUG", "cache ${albumsCache.size}")//
+            //Log.println(Log.ERROR, "DEBUG", "cache ${albumsCache.size}")//
             return albumsCache
         }
 

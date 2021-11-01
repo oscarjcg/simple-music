@@ -18,14 +18,6 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
 
     var pagination = 0
 
-    fun resetPagination() {
-        pagination = 0
-    }
-
-    fun addPagination() {
-        pagination += PAGINATION
-    }
-
     suspend fun getArtists(term: String): List<Artist> {
         addPagination()
 
@@ -46,12 +38,20 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
 
         // Filter. Only artist
         val artists = searchResponse.results?.filterIsInstance<Artist>() as ArrayList<Artist>
-        Log.println(Log.ERROR, "DEBUG", "request ${artists.size}")//
+        //Log.println(Log.ERROR, "DEBUG", "request ${artists.size}")//
 
         // Save to cache
         saveCache(term, pagination, artists)
 
         return artists
+    }
+
+    fun resetPagination() {
+        pagination = 0
+    }
+
+    private fun addPagination() {
+        pagination += PAGINATION
     }
 
     private suspend fun getCache(term: String, limit: Int): List<Artist>? {
@@ -61,7 +61,7 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
         // Only if it is big enough
         if (search != null && limit <= search.limit) {
             val artistsId = searchDao.getSearchResultsArtistId(search.searchId, limit)
-            Log.println(Log.ERROR, "DEBUG", "cache ${artistsId.size}")//
+            //Log.println(Log.ERROR, "DEBUG", "cache ${artistsId.size}")//
 
             val artistsCache = ArrayList<Artist>()
             for (id in artistsId)

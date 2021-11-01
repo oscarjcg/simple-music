@@ -4,12 +4,7 @@ import android.util.Log
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.models.SearchResponse
-import com.example.simplemusic.utils.BASE_URL
 import com.example.simplemusic.webservices.MusicVideoWebService
-import com.example.simplemusic.webservices.SearchWebService
-import com.google.gson.GsonBuilder
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
 
 private const val PAGINATION = 20
@@ -18,14 +13,6 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
                            private val musicVideoWebService: MusicVideoWebService) {
 
     var pagination = 0
-
-    fun resetPagination() {
-        pagination = 0
-    }
-
-    fun addPagination() {
-        pagination += PAGINATION
-    }
 
     suspend fun getArtistMusicVideos(term: String): List<MusicVideo> {
         addPagination()
@@ -47,12 +34,20 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
 
         // Filter. Only artist
         val musicVideos = searchResponse.results?.filterIsInstance<MusicVideo>() as ArrayList<MusicVideo>
-        Log.println(Log.ERROR, "DEBUG", "request ${musicVideos.size}")//
+        //Log.println(Log.ERROR, "DEBUG", "request ${musicVideos.size}")//
 
         // Save to cache with cache info
         saveCache(term, pagination, musicVideos)
 
         return musicVideos
+    }
+
+    fun resetPagination() {
+        pagination = 0
+    }
+
+    private fun addPagination() {
+        pagination += PAGINATION
     }
 
     private suspend fun getCache(term: String, limit: Int): List<MusicVideo>? {
@@ -62,7 +57,7 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
         // so the first one is enough to check
         if (musicVideosCache.isNotEmpty() && limit <= musicVideosCache[0].limit!!) {
             musicVideosCache = apiCacheDao.getArtistOwnerMusicVideos(term, limit)
-            Log.println(Log.ERROR, "DEBUG", "cache ${musicVideosCache.size}")//
+            //Log.println(Log.ERROR, "DEBUG", "cache ${musicVideosCache.size}")//
             return musicVideosCache
         }
         return null
