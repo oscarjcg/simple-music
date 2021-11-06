@@ -5,18 +5,11 @@ import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.os.Parcelable
-import android.util.Log
 import android.view.*
-import android.widget.ImageButton
 import androidx.fragment.app.Fragment
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -28,13 +21,12 @@ import com.example.simplemusic.R
 import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.AlbumSongsAdapter
 import com.example.simplemusic.databinding.FragmentAlbumSongsBinding
+import com.example.simplemusic.models.UIEvent
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
-import com.example.simplemusic.viewmodels.ArtistViewModel
 import com.example.simplemusic.viewmodels.SongViewModel
 import com.example.simplemusic.viewmodels.UserViewModel
-import kotlinx.coroutines.launch
 
 private const val GRID_SIZE_PORTRAIT = 2
 private const val GRID_SIZE_LANDSCAPE = 3
@@ -72,28 +64,27 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
 
         // Inflate the layout for this fragment
         binding = FragmentAlbumSongsBinding.inflate(inflater, container, false)
-        return binding.root    }
+        binding.lifecycleOwner = this
+        binding.viewModel = songViewModel
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initView()
 
-        // Navigation
         navController = findNavController()
 
-        // Toolbar
         setToolbar()
 
-        // Observe when songs are ready
         observeSongs()
 
-        // Init songs list empty
+        observeUIEvents()
+
         initListEmpty()
 
         // Listener. At end of list request more albums data
         songListOnEndListener()
 
-        // Load liked songs
         loadLikes()
 
         // Click pause button. Stop playing song
@@ -101,15 +92,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             releasePlayer()
         }
 
-        // Start fetching songs
         requestSongs(args.albumId)
-    }
-
-    private fun initView() {
-        binding.progressBar.visibility = View.GONE
-        binding.stateTv.visibility = View.GONE
-        binding.playingSongTv.visibility = View.GONE
-        binding.pauseBtn.visibility = View.GONE
     }
 
     private fun initListEmpty() {
@@ -121,6 +104,8 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             gridLayoutManager = GridLayoutManager(activity, GRID_SIZE_LANDSCAPE)
         binding.songRv.layoutManager = gridLayoutManager
         binding.songRv.adapter = songsAdapter
+
+        songViewModel.songs.value = ArrayList()
     }
 
     private fun setToolbar() {
@@ -152,53 +137,58 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     }
 
     private fun requestSongs(albumId: Long) {
-        binding.progressBar.visibility = View.VISIBLE
-
-        // Start request
-        lifecycleScope.launch {
-            songViewModel.searchAlbumSongs(albumId)
-        }
+        songViewModel.searchAlbumSongs(albumId)
     }
 
     /**
      * Retrieves liked song ids for the adapter list.
      */
     private fun loadLikes() {
-        lifecycleScope.launch {
-            userViewModel.user.value?.let {
-                val likedTracksId = userViewModel.getUserLikesTrack(it.userId)
-                songsAdapter.setLikesSongId(likedTracksId)
-            }
-        }
+        userViewModel.user.value?.let { userViewModel.getUserLikesTrack(it.userId) }
     }
 
     private fun observeSongs() {
         songViewModel.songs.observe(viewLifecycleOwner, { songs ->
-            // Request indicators off
-            binding.progressBar.visibility = View.GONE
-            songViewModel.searchingSongs = false
-            binding.stateTv.visibility = View.GONE
-
             // Update songs data
             songsAdapter.setSongs(songs)
 
             // Restore list scroll
-            binding.songRv.layoutManager?.onRestoreInstanceState(songViewModel.recyclerViewState);
-
-            if (songs.isEmpty()) {
-                binding.stateTv.text = getText(R.string.no_results)
-                binding.stateTv.visibility = View.VISIBLE
-
-                // Check if it is because internet
-                if (context?.let { Connectivity.isOnline(it) } == false) {
-                    Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                binding.stateTv.visibility = View.GONE
-            }
+            binding.songRv.layoutManager?.onRestoreInstanceState(songViewModel.recyclerViewState)
 
             //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
         })
+
+        userViewModel.likedTracksId.observe(viewLifecycleOwner, { liked ->
+            songsAdapter.setLikesSongId(liked)
+        })
+    }
+
+    private fun observeUIEvents() {
+        songViewModel.uiState.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { uiEvent ->
+                handleUIEvent(uiEvent)
+            }
+        })
+    }
+
+    private fun handleUIEvent(event: UIEvent<Nothing>) {
+        when (event) {
+            is UIEvent.CheckInternet -> {
+                isInternetAvailable()
+            }
+            is UIEvent.EmptyList -> {
+                songViewModel.setStateInfo(true, getText(R.string.no_results) as String)
+            }
+        }
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        if (context?.let { Connectivity.isOnline(it) } == false) {
+            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT)
+                .show()
+            return false
+        }
+        return true
     }
 
     private fun songListOnEndListener() {
@@ -206,14 +196,14 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
-                val size = songViewModel.songs.value?.size ?: Int.MAX_VALUE
                 // If end of list and there is data to continue
                 if (!recyclerView.canScrollVertically(1) && songViewModel.canGetMoreData()) {
-                    if (!songViewModel.searchingSongs) {
+                    if (!songViewModel.loading.value!!) {
                         // Save list scroll data
-                        songViewModel.recyclerViewState = (binding.songRv.layoutManager as GridLayoutManager).onSaveInstanceState()
+                        songViewModel.recyclerViewState =
+                            (binding.songRv.layoutManager as GridLayoutManager).onSaveInstanceState()
 
-                        // Request more albums data
+                        // Request more songs data
                         requestSongs(args.albumId)
                     }
                 }
@@ -225,28 +215,14 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
      * Click like button. Either save or delete. Updates adapter list.
      */
     override fun onClickLike(song: AlbumSong) {
-        lifecycleScope.launch {
-            userViewModel.user.value?.let {
-                // Switch like . Set or remove like
-                if (song.like!!)
-                    userViewModel.deleteUserLikesTrack(it.userId, song.trackId!!)
-                else
-                    userViewModel.addUserLikesTrack(it.userId, song.trackId!!)
-                song.like = !song.like!!
-
-                // Update liked songs id list
-                val likedTracksId = userViewModel.getUserLikesTrack(it.userId)
-                songsAdapter.setLikesSongId(likedTracksId)
-            }
-        }
+        userViewModel.userLikesTrack(song)
     }
 
     /**
      * Click play button. Play a song.
      */
     override fun onClickPlay(song: AlbumSong) {
-        if (context?.let { Connectivity.isOnline(it) } == false) {
-            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
+        if (!isInternetAvailable()) {
             return
         }
 
@@ -255,9 +231,12 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             releasePlayer()
         }
 
-        binding.progressBar.visibility = View.VISIBLE
+        startMediaPlayer(song)
+    }
 
-        // Start a playing and release on completion
+    private fun startMediaPlayer(song: AlbumSong) {
+        songViewModel.setLoading(true)
+
         mediaPlayer = MediaPlayer().apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
@@ -268,13 +247,15 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             setDataSource(song.previewUrl)
             prepare()
             setOnPreparedListener {
-                binding.progressBar.visibility = View.GONE
+                songViewModel.setLoading(false)
             }
             start()
 
-            binding.playingSongTv.text = song.trackName
-            binding.playingSongTv.visibility = View.VISIBLE
-            binding.pauseBtn.visibility = View.VISIBLE
+            song.trackName?.let {
+                songViewModel.setPlayingSong(true, it)
+            } ?: run {
+                songViewModel.setPlayingSong(true)
+            }
         }.also { mp ->
             mp.setOnCompletionListener {
                 releasePlayer()
@@ -307,8 +288,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         // Release audio player
         mediaPlayer?.release()
         mediaPlayer = null
-        binding.playingSongTv.visibility = View.GONE
-        binding.pauseBtn.visibility = View.GONE
+        songViewModel.setPlayingSong(false)
     }
 
     override fun onPause() {

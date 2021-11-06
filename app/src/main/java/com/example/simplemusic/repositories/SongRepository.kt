@@ -1,8 +1,10 @@
 package com.example.simplemusic.repositories
 
-import android.util.Log
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.database.dao.ApiCacheDao
+import com.example.simplemusic.models.RepositoryResult
+import com.example.simplemusic.models.RepositoryResult.Success
+import com.example.simplemusic.models.RepositoryResult.Error
 import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.webservices.SongWebService
 import java.lang.Exception
@@ -14,22 +16,20 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
 
     var pagination = 0
 
-    suspend fun getAlbumSongs(albumId: Long): List<AlbumSong> {
+    suspend fun getAlbumSongs(albumId: Long): RepositoryResult<List<AlbumSong>> {
         addPagination()
 
         // Check cache and use it if available
         val songsCache = getCache(albumId, pagination)
         if (songsCache != null)
-            return songsCache
+            return Success(songsCache)
 
         // Start request
         val searchResponse: SearchResponse
         try {
             searchResponse = songWebService.getAlbumSongs(albumId, pagination)
         } catch (e: Exception) {
-            e.printStackTrace()
-            // In case of error just return no results
-            return ArrayList()
+            return Error(e)
         }
 
         // Filter. Only songs
@@ -39,7 +39,7 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
         // Save to cache with cache info
         saveCache(albumId, pagination, songs)
 
-        return songs
+        return Success(songs)
     }
 
     fun resetPagination() {

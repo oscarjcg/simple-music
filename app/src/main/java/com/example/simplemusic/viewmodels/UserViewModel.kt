@@ -2,10 +2,13 @@ package com.example.simplemusic.viewmodels
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.models.stored.DEFAULT_USER_NAME
 import com.example.simplemusic.models.stored.User
 import com.example.simplemusic.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -20,6 +23,7 @@ class UserViewModel
     ) : ViewModel() {
 
     val user = MutableLiveData<User>()
+    val likedTracksId = MutableLiveData<List<Long>>()
 
     /**
      * Add a default user if none created. Or finds a default user.
@@ -30,17 +34,35 @@ class UserViewModel
             userRepository.addUser(User(DEFAULT_USER_NAME))
 
         user.value = userRepository.findUserByName(DEFAULT_USER_NAME)
+
     }
 
-    suspend fun addUserLikesTrack(userId: Long, trackId: Long) {
+    fun userLikesTrack(song: AlbumSong) {
+        viewModelScope.launch {
+            user.value?.let {
+                // Switch like . Set or remove like
+                if (song.like!!)
+                    deleteUserLikesTrack(it.userId, song.trackId!!)
+                else
+                    addUserLikesTrack(it.userId, song.trackId!!)
+                song.like = !song.like!!
+
+                getUserLikesTrack(user.value!!.userId)
+            }
+        }
+    }
+
+    fun getUserLikesTrack(userId: Long) {
+        viewModelScope.launch {
+            likedTracksId.value = userRepository.getUserLikesTrack(userId)
+        }
+    }
+
+    private suspend fun addUserLikesTrack(userId: Long, trackId: Long) {
         userRepository.addUserLikesTrack(userId, trackId)
     }
 
-    suspend fun getUserLikesTrack(userId: Long): List<Long> {
-        return userRepository.getUserLikesTrack(userId)
-    }
-
-    suspend fun deleteUserLikesTrack(userId: Long, trackId: Long) {
+    private suspend fun deleteUserLikesTrack(userId: Long, trackId: Long) {
         userRepository.deleteUserLikesTrack(userId, trackId)
     }
 }
