@@ -1,7 +1,9 @@
 package com.example.simplemusic.repositories
 
 import com.example.simplemusic.database.dao.ApiCacheDao
+import com.example.simplemusic.models.RepositoryResult
 import com.example.simplemusic.models.SearchResponse
+import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.webservices.AlbumWebService
 import com.google.common.truth.Truth.assertThat
@@ -42,7 +44,7 @@ class AlbumRepositoryTest {
 
         `when`(albumWebService.getArtistAlbums(artistId, limit)).thenReturn(response)
         `when`(apiCacheDao.getArtistOwnerAlbums(artistId, 1)).thenReturn(cacheAlbums)
-        val albums = albumRepository.getArtistAlbums(artistId)
+        val albums = getRepositoryData(albumRepository.getArtistAlbums(artistId))
 
         verify(albumWebService).getArtistAlbums(artistId, limit)
         assertThat(albums).isEqualTo(response.results)
@@ -59,7 +61,7 @@ class AlbumRepositoryTest {
         `when`(albumWebService.getArtistAlbums(artistId, limit*2)).thenReturn(response40Albums)
         `when`(apiCacheDao.getArtistOwnerAlbums(artistId, 1)).thenReturn(cacheAlbums)
         albumRepository.getArtistAlbums(artistId)
-        val albums = albumRepository.getArtistAlbums(artistId)
+        val albums = getRepositoryData(albumRepository.getArtistAlbums(artistId))
 
         verify(albumWebService).getArtistAlbums(artistId, limit)
         verify(albumWebService).getArtistAlbums(artistId, limit*2)
@@ -76,7 +78,7 @@ class AlbumRepositoryTest {
         `when`(apiCacheDao.getArtistOwnerAlbums(artistId, 1)).thenReturn(cacheAlbums)
         albumRepository.getArtistAlbums(artistId)
         albumRepository.resetPagination()
-        val albums = albumRepository.getArtistAlbums(artistId)
+        val albums = getRepositoryData(albumRepository.getArtistAlbums(artistId))
 
         verify(albumWebService, times(2)).getArtistAlbums(artistId, limit)
         assertThat(albums).isEqualTo(response.results)
@@ -91,7 +93,7 @@ class AlbumRepositoryTest {
         `when`(albumWebService.getArtistAlbums(artistId, limit)).thenReturn(response)
         `when`(apiCacheDao.getArtistOwnerAlbums(artistId, 1)).thenReturn(cacheAlbums)
         `when`(apiCacheDao.getArtistOwnerAlbums(artistId, limit)).thenReturn(cacheAlbums)
-        val albums = albumRepository.getArtistAlbums(artistId)
+        val albums = getRepositoryData(albumRepository.getArtistAlbums(artistId))
 
         verify(albumWebService, never()).getArtistAlbums(artistId, limit)
         assertThat(albums).isEqualTo(cacheAlbums)
@@ -114,5 +116,9 @@ class AlbumRepositoryTest {
             albums.add(album)
         }
         return albums
+    }
+
+    private fun getRepositoryData(repositoryResult: RepositoryResult<List<ArtistAlbum>>): List<ArtistAlbum> {
+        return (repositoryResult as RepositoryResult.Success).data
     }
 }

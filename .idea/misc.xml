@@ -18,7 +18,7 @@
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.28390102446281207" />
         <entry key="app/src/main/res/layout/album_viewholder.xml" value="0.286231884057971" />
         <entry key="app/src/main/res/layout/artist_viewholder.xml" value="0.30344202898550726" />
-        <entry key="app/src/main/res/layout/fragment_album_songs.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_album_songs.xml" value="0.1711085225163361" />
         <entry key="app/src/main/res/layout/fragment_artist.xml" value="0.327445652173913" />
         <entry key="app/src/main/res/layout/fragment_artist_albums.xml" value="0.3182957393483709" />
         <entry key="app/src/main/res/layout/fragment_artist_music_videos.xml" value="0.30123959389143495" />

@@ -3,9 +3,16 @@ package com.example.simplemusic.viewmodels
 import android.os.Parcelable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.simplemusic.models.RepositoryResult
+import com.example.simplemusic.models.UIEvent
+import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.repositories.AlbumRepository
+import com.example.simplemusic.utils.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 /**
@@ -26,13 +33,59 @@ class AlbumViewModel
 
     // UI
     var searchedArtist: String? = null
-    var searchingAlbums: Boolean = false
+    val loading = MutableLiveData(false)
+    val showStateInfo = MutableLiveData(false)
+    val stateInfo = MutableLiveData<String>()
+    val uiState = MutableLiveData<Event<UIEvent<Nothing>>>()
 
-    suspend fun searchArtistAlbum(artistId: Int) {
-        searchingAlbums = true
-        albums.value = albumRepository.getArtistAlbums(artistId)
+    fun setLoading(loading: Boolean) {
+        this.loading.value = loading
     }
 
+    fun setStateInfo(show: Boolean, message: String = "") {
+        showStateInfo.value = show
+        stateInfo.value = message
+    }
+
+    fun searchArtistAlbum(artistId: Int) {
+        setLoading(true)
+        setStateInfo(false)
+
+        viewModelScope.launch {
+            val repositoryResult = albumRepository.getArtistAlbums(artistId)
+            setLoading(false)
+
+            when(repositoryResult) {
+                is RepositoryResult.Success -> {
+                    handleSuccess(repositoryResult.data)
+                }
+                is RepositoryResult.Error -> {
+                    handleError(repositoryResult.exception)
+                }
+            }
+        }
+    }
+
+
+    private fun handleSuccess(data: List<ArtistAlbum>) {
+        albums.value = data
+        albums.value?.let {
+            if (it.isNotEmpty()) {
+                setStateInfo(false)
+            }
+        }
+    }
+
+    private fun handleError(exception: Exception) {
+        exception.printStackTrace()
+
+        uiState.value = Event(UIEvent.CheckInternet)
+        albums.value?.let {
+            if (it.isEmpty()) {
+                uiState.value = Event(UIEvent.EmptyList)
+            }
+        }
+    }
     suspend fun deleteAll() {
         albumRepository.deleteAll()
     }

@@ -2,7 +2,9 @@ package com.example.simplemusic.repositories
 
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.database.dao.SearchDao
+import com.example.simplemusic.models.RepositoryResult
 import com.example.simplemusic.models.SearchResponse
+import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.webservices.MusicVideoWebService
 import com.google.common.truth.Truth.assertThat
@@ -43,7 +45,7 @@ class MusicVideoRepositoryTest {
 
         `when`(musicVideoWebService.getArtistMusicVideos(artistName, limit)).thenReturn(response)
         `when`(apiCacheDao.getArtistOwnerMusicVideos(artistName, 1)).thenReturn(cacheSongs)
-        val musicVideos = musicVideoRepository.getArtistMusicVideos(artistName)
+        val musicVideos = getRepositoryData(musicVideoRepository.getArtistMusicVideos(artistName))
 
         assertThat(musicVideos).isEqualTo(response.results)
         assertThat(musicVideos.size).isEqualTo(nMusicVideos)
@@ -59,7 +61,7 @@ class MusicVideoRepositoryTest {
         `when`(musicVideoWebService.getArtistMusicVideos(artistName, limit*2)).thenReturn(response40Songs)
         `when`(apiCacheDao.getArtistOwnerMusicVideos(artistName, 1)).thenReturn(cacheSongs)
         musicVideoRepository.getArtistMusicVideos(artistName)
-        val musicVideos = musicVideoRepository.getArtistMusicVideos(artistName)
+        val musicVideos = getRepositoryData(musicVideoRepository.getArtistMusicVideos(artistName))
 
         assertThat(musicVideos).isEqualTo(response40Songs.results)
         assertThat(musicVideos.size).isEqualTo(nMusicVideos*2)
@@ -75,7 +77,7 @@ class MusicVideoRepositoryTest {
         `when`(apiCacheDao.getArtistOwnerMusicVideos(artistName, 1)).thenReturn(cacheSongs)
         musicVideoRepository.getArtistMusicVideos(artistName)
         musicVideoRepository.resetPagination()
-        val musicVideos = musicVideoRepository.getArtistMusicVideos(artistName)
+        val musicVideos = getRepositoryData(musicVideoRepository.getArtistMusicVideos(artistName))
 
         verify(musicVideoWebService, times(2)).getArtistMusicVideos(artistName, limit)
         assertThat(musicVideos).isEqualTo(response.results)
@@ -90,7 +92,7 @@ class MusicVideoRepositoryTest {
         `when`(musicVideoWebService.getArtistMusicVideos(artistName, limit)).thenReturn(response)
         `when`(apiCacheDao.getArtistOwnerMusicVideos(artistName, 1)).thenReturn(cacheSongs)
         `when`(apiCacheDao.getArtistOwnerMusicVideos(artistName, limit)).thenReturn(cacheSongs)
-        val musicVideos = musicVideoRepository.getArtistMusicVideos(artistName)
+        val musicVideos = getRepositoryData(musicVideoRepository.getArtistMusicVideos(artistName))
 
         verify(musicVideoWebService, never()).getArtistMusicVideos(artistName, limit)
         assertThat(musicVideos).isEqualTo(cacheSongs)
@@ -113,5 +115,9 @@ class MusicVideoRepositoryTest {
             musicVideos.add(musicVideo)
         }
         return musicVideos
+    }
+
+    private fun getRepositoryData(repositoryResult: RepositoryResult<List<MusicVideo>>): List<MusicVideo> {
+        return (repositoryResult as RepositoryResult.Success).data
     }
 }

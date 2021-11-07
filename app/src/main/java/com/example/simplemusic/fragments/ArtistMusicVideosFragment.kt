@@ -3,13 +3,10 @@ package com.example.simplemusic.fragments
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
@@ -18,9 +15,9 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
-import com.example.simplemusic.adapters.ArtistAlbumsAdapter
 import com.example.simplemusic.adapters.ArtistMusicVideosAdapter
 import com.example.simplemusic.databinding.FragmentArtistMusicVideosBinding
+import com.example.simplemusic.models.UIEvent
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
@@ -54,65 +51,27 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
 
         // Inflate the layout for this fragment
         binding = FragmentArtistMusicVideosBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = this
+        binding.viewModel = musicVideoViewModel
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initView()
 
-        // Toolbar
+        binding.videoView.visibility = View.GONE
+        binding.closeBtn.visibility = View.GONE
+
         setToolbar()
 
-        // Observe when music videos ready
-        musicVideoViewModel.musicVideos.observe(viewLifecycleOwner, { musicVideos ->
-            // Request indicators off
-            binding.progressBar.visibility = View.GONE
-            musicVideoViewModel.searchingMusicVideos = false
-            binding.stateTv.visibility = View.GONE
+        observeMusicVideos()
 
-            // Update artists data
-            musicVideosAdapter.setMusicVideos(musicVideos)
+        observeUIEvents()
 
-            // Restore list scroll
-            binding.musicVideosRv.layoutManager?.onRestoreInstanceState(musicVideoViewModel.recyclerViewState)
-
-            if (musicVideos.isEmpty()) {
-                binding.stateTv.text = getText(R.string.no_results)
-                binding.stateTv.visibility = View.VISIBLE
-
-                // Check if it is because internet
-                if (context?.let { Connectivity.isOnline(it) } == false) {
-                    Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                binding.stateTv.visibility = View.GONE
-            }
-
-            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
-        })
-
-        // Init music video list empty
         initEmptyList()
 
         // Listener. At end of list request more music videos data
-        binding.musicVideosRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-
-                val size = musicVideoViewModel.musicVideos.value?.size ?: Int.MAX_VALUE
-                // If end of list and there is data to continue
-                if (!recyclerView.canScrollVertically(1) && musicVideoViewModel.canGetMoreData()) {
-                    if (!musicVideoViewModel.searchingMusicVideos) {
-                        // Save list scroll data
-                        musicVideoViewModel.recyclerViewState = (binding.musicVideosRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
-
-                        // Request more albums data
-                        albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
-                    }
-                }
-            }
-        })
+        albumListOnEndListener()
 
         // Click close button when playing video
         binding.closeBtn.setOnClickListener {
@@ -121,13 +80,6 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
 
         // Start fetching music videos
         albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
-    }
-
-    private fun initView() {
-        binding.progressBar.visibility = View.GONE
-        binding.stateTv.visibility = View.GONE
-        binding.videoView.visibility = View.GONE
-        binding.closeBtn.visibility = View.GONE
     }
 
     private fun setToolbar() {
@@ -159,23 +111,75 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     }
 
     private fun initEmptyList() {
-        // Init music video list empty
         musicVideosAdapter = ArtistMusicVideosAdapter(ArrayList(), this)
         linearLayoutManager = LinearLayoutManager(activity)
         binding.musicVideosRv.layoutManager = linearLayoutManager
         binding.musicVideosRv.adapter = musicVideosAdapter
+
+        musicVideoViewModel.musicVideos.value = ArrayList()
     }
 
-    /**
-     * Start request to get music videos.
-     */
-    private fun requestMusicVideos(artistName: String) {
-        binding.progressBar.visibility = View.VISIBLE
+    private fun observeMusicVideos() {
+        musicVideoViewModel.musicVideos.observe(viewLifecycleOwner, { musicVideos ->
+            // Update artists data
+            musicVideosAdapter.setMusicVideos(musicVideos)
 
-        // Start request
-        lifecycleScope.launch {
-            musicVideoViewModel.searchArtistMusicVideos(artistName)
+            // Restore list scroll
+            binding.musicVideosRv.layoutManager?.onRestoreInstanceState(musicVideoViewModel.recyclerViewState)
+
+            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+        })
+    }
+
+    private fun observeUIEvents() {
+        musicVideoViewModel.uiState.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { uiEvent ->
+                handleUIEvent(uiEvent)
+            }
+        })
+    }
+
+    private fun handleUIEvent(event: UIEvent<Nothing>) {
+        when (event) {
+            is UIEvent.CheckInternet -> {
+                isInternetAvailable()
+            }
+            is UIEvent.EmptyList -> {
+                musicVideoViewModel.setStateInfo(true, getText(R.string.no_results) as String)
+            }
         }
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        if (context?.let { Connectivity.isOnline(it) } == false) {
+            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT)
+                .show()
+            return false
+        }
+        return true
+    }
+
+    private fun albumListOnEndListener() {
+        binding.musicVideosRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+
+                // If end of list and there is data to continue
+                if (!recyclerView.canScrollVertically(1) && musicVideoViewModel.canGetMoreData()) {
+                    if (!musicVideoViewModel.loading.value!!) {
+                        // Save list scroll data
+                        musicVideoViewModel.recyclerViewState = (binding.musicVideosRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
+
+                        // Request more albums data
+                        albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
+                    }
+                }
+            }
+        })
+    }
+
+    private fun requestMusicVideos(artistName: String) {
+        musicVideoViewModel.searchArtistMusicVideos(artistName)
     }
 
     /**
@@ -200,8 +204,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
      * Click play video. Starts to play a video.
      */
     override fun onPlayMusicVideo(musicVideo: MusicVideo) {
-        if (context?.let { Connectivity.isOnline(it) } == false) {
-            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
+        if (!isInternetAvailable()) {
             return
         }
 
@@ -209,30 +212,10 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     }
 
     /**
-     * Show ui elements of the video player.
-     */
-    private fun showVideoPlayer() {
-        // Turn on indicators
-        binding.videoView.visibility = View.VISIBLE
-        binding.progressBar.visibility = View.VISIBLE
-        binding.closeBtn.visibility = View.VISIBLE
-    }
-
-    /**
-     * Hide ui elements of the video player.
-     */
-    private fun hideVideoPlayer() {
-        binding.videoView.visibility = View.GONE
-        binding.progressBar.visibility = View.GONE
-        binding.closeBtn.visibility = View.GONE
-    }
-
-    /**
      * Play a video. CLose at the end.
      */
     private fun startVideoPlayer(musicVideo: MusicVideo) {
-        // Turn on indicators
-        showVideoPlayer()
+        musicVideoViewModel.setShowVideoPlayer(true)
 
         // Build player
         val uri = Uri.parse(musicVideo.previewUrl)
@@ -256,11 +239,10 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
      * Stop video and close player.
      */
     private fun closeVideoPlayer() {
-        // Stop video if it's playing
         if (binding.videoView.isPlaying)
             binding.videoView.stopPlayback()
-        // Turn off indicators
-        hideVideoPlayer()
+
+        musicVideoViewModel.setShowVideoPlayer(false)
     }
 
     override fun onPause() {
@@ -270,7 +252,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
 
     companion object {
         @JvmStatic
-        fun newInstance(param1: String) =
+        fun newInstance() =
             ArtistMusicVideosFragment().apply {
                 arguments = Bundle().apply {
                 }

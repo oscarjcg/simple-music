@@ -58,8 +58,8 @@ class SongViewModel
         setStateInfo(false)
 
         viewModelScope.launch {
-            setLoading(false)
             val repositoryResult = songRepository.getAlbumSongs(albumId)
+            setLoading(false)
 
             when(repositoryResult) {
                 is RepositoryResult.Success -> {
