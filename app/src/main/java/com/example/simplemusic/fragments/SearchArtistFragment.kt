@@ -24,8 +24,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.doAfterTextChanged
-import com.example.simplemusic.databinding.FragmentArtistMusicVideosBinding
 import com.example.simplemusic.databinding.FragmentSearchArtistBinding
+import com.example.simplemusic.models.UIEvent
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
@@ -59,6 +59,8 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
         // Inflate the layout for this fragment
         binding = FragmentSearchArtistBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = this
+        binding.viewModel = artistViewModel
         return binding.root
     }
 
@@ -67,25 +69,21 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
         initView()
 
-        // Navigation
         navController = findNavController()
 
-        // Toolbar
         setToolbar()
 
-        // Observe artists
         observeArtists()
 
-        // Init artist list empty
+        observeUIEvents()
+
         initEmptyList()
 
         // Listener. At end of list request more artist data
         artistListOnEndListener()
 
-        // Search
         searchListener()
 
-        // Clear search
         clearListener()
 
         // Default user
@@ -96,8 +94,6 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
 
     private fun initView() {
-        binding.progressBar.visibility = View.GONE
-        binding.stateTv.visibility = View.GONE
         artistViewModel.anim = false
     }
 
@@ -106,6 +102,8 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
         linearLayoutManager = LinearLayoutManager(context)
         binding.artistRv.layoutManager = linearLayoutManager
         binding.artistRv.adapter = artistAdapter
+
+        artistViewModel.artists.value = ArrayList()
     }
 
     private fun searchListener() {
@@ -176,11 +174,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      */
     private fun requestSearch(search: String) {
         binding.progressBar.visibility = View.VISIBLE
-
-        // Start request
-        lifecycleScope.launch {
-            artistViewModel.searchArtist(search)
-        }
+        artistViewModel.searchArtist(search)
     }
 
     /**
@@ -233,10 +227,8 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
     private fun observeArtists() {
         artistViewModel.artists.observe(viewLifecycleOwner, { artists ->
-            // Request indicators off
+            // Binding not working. Progress bar not showing
             binding.progressBar.visibility = View.GONE
-            artistViewModel.searchingArtist = false
-            binding.stateTv.visibility = View.GONE
 
             // Save list scroll data
             val scroll = binding.artistRv.layoutManager?.onSaveInstanceState()
@@ -249,24 +241,39 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
             // If there are results, the artist list will be at the center
             if (artists.isEmpty()) {
-                // Trying to search something but no results
-                if (binding.searchEt.text.isNotEmpty()) {
-                    binding.stateTv.visibility = View.VISIBLE
-                    binding.stateTv.text = getText(R.string.no_results)
-                }
-                // Move search bar down
                 searchBarCenter()
-
-                // Check is is because internet
-                if (context?.let { Connectivity.isOnline(it) } == false) {
-                    Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT).show()
-                }
             } else {
-                binding.stateTv.visibility = View.GONE
-                // Move search bar up
                 searchBarTop()
             }
         })
+    }
+
+    private fun observeUIEvents() {
+        artistViewModel.uiState.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { uiEvent ->
+                handleUIEvent(uiEvent)
+            }
+        })
+    }
+
+    private fun handleUIEvent(event: UIEvent<Nothing>) {
+        when (event) {
+            is UIEvent.CheckInternet -> {
+                isInternetAvailable()
+            }
+            is UIEvent.EmptyList -> {
+                artistViewModel.setStateInfo(true, getText(R.string.no_results) as String)
+            }
+        }
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        if (context?.let { Connectivity.isOnline(it) } == false) {
+            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_SHORT)
+                .show()
+            return false
+        }
+        return true
     }
 
     private fun artistListOnEndListener() {
@@ -276,10 +283,9 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
                 hideKeyboard()
 
-                val size = artistViewModel.artists.value?.size ?: Int.MAX_VALUE
                 // If end of list and there is data to continue
                 if (!recyclerView.canScrollVertically(1) && artistViewModel.canGetMoreData()) {
-                    if (!artistViewModel.searchingArtist) {
+                    if (!artistViewModel.loading.value!!) {
 
                         // Request more artists data
                         artistViewModel.searchedArtist?.let { requestSearch(it) }

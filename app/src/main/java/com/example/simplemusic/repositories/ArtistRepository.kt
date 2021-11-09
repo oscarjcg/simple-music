@@ -4,6 +4,9 @@ import android.util.Log
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.database.dao.SearchDao
+import com.example.simplemusic.models.RepositoryResult
+import com.example.simplemusic.models.RepositoryResult.Success
+import com.example.simplemusic.models.RepositoryResult.Error
 import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.models.stored.search.Search
 import com.example.simplemusic.models.stored.search.SearchResultArtist
@@ -18,12 +21,12 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
 
     var pagination = 0
 
-    suspend fun getArtists(term: String): List<Artist> {
+    suspend fun getArtists(term: String): RepositoryResult<List<Artist>> {
         addPagination()
 
         val artistsCache = getCache(term, pagination)
         if (artistsCache != null)
-            return artistsCache
+            return Success(artistsCache)
 
         // Request
         val searchResponse: SearchResponse
@@ -31,9 +34,7 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
             searchResponse = searchWebService.getArtists(term, pagination)
         }
         catch (e: Exception) {
-            e.printStackTrace()
-            // In case of error just return no results
-            return ArrayList()
+            return Error(e)
         }
 
         // Filter. Only artist
@@ -43,7 +44,7 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
         // Save to cache
         saveCache(term, pagination, artists)
 
-        return artists
+        return Success(artists)
     }
 
     fun resetPagination() {

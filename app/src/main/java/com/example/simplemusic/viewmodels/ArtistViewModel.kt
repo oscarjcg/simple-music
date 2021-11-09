@@ -1,13 +1,16 @@
 package com.example.simplemusic.viewmodels
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.simplemusic.models.RepositoryResult
+import com.example.simplemusic.models.UIEvent
 import com.example.simplemusic.models.multimediacontent.Artist
-import com.example.simplemusic.database.AppDatabase
 import com.example.simplemusic.repositories.ArtistRepository
+import com.example.simplemusic.utils.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 /**
@@ -23,13 +26,59 @@ class ArtistViewModel
 
     // UI
     var searchedArtist: String? = null
-    var searchingArtist: Boolean = false
+    val loading = MutableLiveData(true)
+    val showStateInfo = MutableLiveData(false)
+    val stateInfo = MutableLiveData<String>()
+    val uiState = MutableLiveData<Event<UIEvent<Nothing>>>()
     var anim = false
 
-    suspend fun searchArtist(term: String) {
+    fun setLoading(loading: Boolean) {
+        this.loading.value = loading
+    }
+
+    fun setStateInfo(show: Boolean, message: String = "") {
+        showStateInfo.value = show
+        stateInfo.value = message
+    }
+
+    fun searchArtist(term: String) {
         searchedArtist = term
-        searchingArtist = true
-        artists.value = artistRepository.getArtists(term)
+        setLoading(true)
+        setStateInfo(false)
+
+        viewModelScope.launch {
+            val repositoryResult = artistRepository.getArtists(term)
+            setLoading(false)
+
+            when(repositoryResult) {
+                is RepositoryResult.Success -> {
+                    handleSuccess(repositoryResult.data)
+                }
+                is RepositoryResult.Error -> {
+                    handleError(repositoryResult.exception)
+                }
+            }
+        }
+    }
+
+    private fun handleSuccess(data: List<Artist>) {
+        artists.value = data
+        artists.value?.let {
+            if (it.isNotEmpty()) {
+                setStateInfo(false)
+            }
+        }
+    }
+
+    private fun handleError(exception: Exception) {
+        exception.printStackTrace()
+
+        uiState.value = Event(UIEvent.CheckInternet)
+        artists.value?.let {
+            if (it.isEmpty()) {
+                uiState.value = Event(UIEvent.EmptyList)
+            }
+        }
     }
 
     suspend fun deleteAll() {
