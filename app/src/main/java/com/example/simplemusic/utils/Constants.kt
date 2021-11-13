@@ -10,3 +10,7 @@ const val PARAM_ID = "id"
 const val PARAM_ATTRIBUTE = "attribute"
 const val PARAM_SORT = "sort"
 const val PARAM_SORT_RECENT = "recent"
+
+const val WRAPPER_TYPE_ARTIST = "artist"
+const val WRAPPER_TYPE_COLLECTION = "collection"
+const val WRAPPER_TYPE_TRACK = "track"

@@ -7,6 +7,8 @@ import com.example.simplemusic.models.RepositoryResult
 import com.example.simplemusic.models.RepositoryResult.Success
 import com.example.simplemusic.models.RepositoryResult.Error
 import com.example.simplemusic.models.SearchResponse
+import com.example.simplemusic.utils.WRAPPER_TYPE_ARTIST
+import com.example.simplemusic.utils.WRAPPER_TYPE_COLLECTION
 import com.example.simplemusic.webservices.AlbumWebService
 import java.lang.Exception
 
@@ -26,7 +28,7 @@ class AlbumRepository(private val apiCacheDao: ApiCacheDao,
             return Success(albumsCache)
 
         // Start request
-        val searchResponse: SearchResponse
+        val searchResponse: SearchResponse<ArtistAlbum>
         try {
             searchResponse = albumWebService.getArtistAlbums(artistId, pagination)
         } catch (e: Exception) {
@@ -34,8 +36,12 @@ class AlbumRepository(private val apiCacheDao: ApiCacheDao,
         }
 
         // Filter. Only albums
-        val albums = searchResponse.results?.filterIsInstance<ArtistAlbum>() as ArrayList<ArtistAlbum>
+        val albums = ArrayList(searchResponse.results ?: listOf())
         //Log.println(Log.ERROR, "DEBUG", "request ${albums.size}")//
+        if (albums.isNotEmpty()) {
+            if (albums[0].wrapperType.equals(WRAPPER_TYPE_ARTIST))
+                albums.removeAt(0)
+        }
 
         // Save to cache
         saveCache(artistId, pagination, albums)

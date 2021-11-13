@@ -29,7 +29,7 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
             return Success(artistsCache)
 
         // Request
-        val searchResponse: SearchResponse
+        val searchResponse: SearchResponse<Artist>
         try {
             searchResponse = searchWebService.getArtists(term, pagination)
         }
@@ -38,7 +38,7 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
         }
 
         // Filter. Only artist
-        val artists = searchResponse.results?.filterIsInstance<Artist>() as ArrayList<Artist>
+        val artists = ArrayList(searchResponse.results ?: listOf())
         //Log.println(Log.ERROR, "DEBUG", "request ${artists.size}")//
 
         // Save to cache

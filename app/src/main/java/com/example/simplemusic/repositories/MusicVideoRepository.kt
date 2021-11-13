@@ -26,7 +26,7 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
             return Success(musicVideosCache)
 
         // Request
-        val searchResponse: SearchResponse
+        val searchResponse: SearchResponse<MusicVideo>
         try {
             searchResponse = musicVideoWebService.getArtistMusicVideos(term, pagination)
         } catch (e: Exception) {
@@ -34,7 +34,7 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
         }
 
         // Filter. Only artist
-        val musicVideos = searchResponse.results?.filterIsInstance<MusicVideo>() as ArrayList<MusicVideo>
+        val musicVideos = ArrayList(searchResponse.results ?: listOf())
         //Log.println(Log.ERROR, "DEBUG", "request ${musicVideos.size}")//
 
         // Save to cache with cache info

@@ -7,12 +7,12 @@ import com.google.gson.annotations.SerializedName
 /**
  * Response data structure for the search API.
  */
-class SearchResponse {
+class SearchResponse<T: MultimediaContent> {
     @SerializedName("resultCount")
     @Expose
     var resultCount: Int? = null
 
     @SerializedName("results")
     @Expose
-    var results: List<MultimediaContent>? = null
+    var results: List<T>? = null
 }
