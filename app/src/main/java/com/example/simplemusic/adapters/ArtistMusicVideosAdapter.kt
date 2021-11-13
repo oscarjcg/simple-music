@@ -10,7 +10,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.simplemusic.R
-import com.example.simplemusic.models.multimediacontent.ArtistAlbum
+import com.example.simplemusic.databinding.MusicVideoViewholderBinding
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,40 +28,31 @@ class ArtistMusicVideosAdapter(private var musicVideos: List<MusicVideo>,
         fun onPlayMusicVideo(musicVideo: MusicVideo)
     }
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val nameTv: TextView = view.findViewById(R.id.nameTv)
-        val container: ConstraintLayout = view.findViewById(R.id.container)
-        val artworkIv: ImageView = view.findViewById(R.id.artworkIv)
-        val dateTv: TextView = view.findViewById(R.id.dateTv)
-        val play: ImageButton = view.findViewById(R.id.playBtn)
+    class ViewHolder(val binding: MusicVideoViewholderBinding) : RecyclerView.ViewHolder(binding.root) {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.music_video_viewholder, parent, false)
-        return ViewHolder(view)
+        val binding = MusicVideoViewholderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val musicVideo = musicVideos[position]
 
-        // Music video name
-        holder.nameTv.text = musicVideo.trackName
+        holder.binding.name.text = musicVideo.trackName
 
-        // Music video release date
         val simpleDateFormat = SimpleDateFormat(RELEASE_DATE_FORMAT, Locale.ENGLISH)
-        holder.dateTv.text = simpleDateFormat.format(musicVideo.releaseDate)
+        holder.binding.date.text = simpleDateFormat.format(musicVideo.releaseDate)
 
-        // Artwork image
-        Glide.with(holder.artworkIv)
+        Glide.with(holder.binding.artwork)
             .load(musicVideo.artworkUrl100)
-            .into(holder.artworkIv)
+            .into(holder.binding.artwork)
 
-        // Click listener
-        holder.play.setOnClickListener {
+        holder.binding.play.setOnClickListener {
             actionInterface.onPlayMusicVideo(musicVideo)
         }
 
-        holder.container.setOnClickListener {
+        holder.binding.container.setOnClickListener {
             actionInterface.onClickMusicVideo(musicVideo)
         }
     }

@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
+import com.example.simplemusic.databinding.ArtistViewholderBinding
 import com.example.simplemusic.models.multimediacontent.Artist
 
 /**
@@ -19,27 +20,21 @@ class ArtistAdapter(private var artists: List<Artist>,
         fun onClickArtist(artist: Artist)
     }
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val name: TextView = view.findViewById(R.id.nameTv)
-        val genre: TextView = view.findViewById(R.id.genreTv)
-        val container: ConstraintLayout = view.findViewById(R.id.container)
+    class ViewHolder(val binding: ArtistViewholderBinding) : RecyclerView.ViewHolder(binding.root) {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.artist_viewholder, parent, false)
-        return ViewHolder(view)
+        val binding = ArtistViewholderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val artist = artists[position]
 
-        // Artist name
-        holder.name.text = artist.artistName
-        // Artist music genre
-        holder.genre.text = artist.primaryGenreName
+        holder.binding.name.text = artist.artistName
+        holder.binding.genre.text = artist.primaryGenreName
 
-        // Click listener
-        holder.container.setOnClickListener {
+        holder.binding.container.setOnClickListener {
             actionInterface.onClickArtist(artist)
         }
     }
@@ -49,7 +44,6 @@ class ArtistAdapter(private var artists: List<Artist>,
     }
 
     fun setArtists(artists: List<Artist>) {
-
         // Either reload everything or just new inserted data
         if (this.artists.size == artists.size) {
             this.artists = artists
@@ -59,7 +53,5 @@ class ArtistAdapter(private var artists: List<Artist>,
             this.artists = artists
             notifyItemRangeInserted(start, artists.size)
         }
-
-
     }
 }

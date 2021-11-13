@@ -1,4 +1,4 @@
-package com.example.simplemusic.models
+package com.example.simplemusic.utils
 
 /**
  * A generic class that holds a value with its loading status.

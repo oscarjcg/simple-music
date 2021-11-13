@@ -28,7 +28,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/musicVideosRv"
+            android:id="@+id/musicVideos"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -37,7 +37,7 @@
             app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
         <VideoView
-            android:id="@+id/videoView"
+            android:id="@+id/video"
             android:visibility="@{viewModel.showVideoPlayer? View.VISIBLE : View.GONE}"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -47,7 +47,7 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <ImageButton
-            android:id="@+id/closeBtn"
+            android:id="@+id/close"
             android:visibility="@{viewModel.showVideoPlayer? View.VISIBLE : View.GONE}"
             android:layout_width="30dp"
             android:layout_height="30dp"
@@ -58,7 +58,7 @@
             android:scaleType="centerCrop"
             android:src="@drawable/ic_close"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/videoView" />
+            app:layout_constraintTop_toTopOf="@+id/video" />
 
 
         <ProgressBar
@@ -69,22 +69,22 @@
             android:layout_height="100dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            app:layout_constraintTop_toTopOf="@+id/musicVideosRv"
-            app:layout_constraintEnd_toEndOf="@+id/musicVideosRv"
-            app:layout_constraintStart_toStartOf="@+id/musicVideosRv"
-            app:layout_constraintBottom_toBottomOf="@+id/musicVideosRv" />
+            app:layout_constraintTop_toTopOf="@+id/musicVideos"
+            app:layout_constraintEnd_toEndOf="@+id/musicVideos"
+            app:layout_constraintStart_toStartOf="@+id/musicVideos"
+            app:layout_constraintBottom_toBottomOf="@+id/musicVideos" />
 
         <TextView
-            android:id="@+id/stateTv"
+            android:id="@+id/stateInfo"
             android:visibility="@{viewModel.showStateInfo? View.VISIBLE : View.GONE}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{viewModel.stateInfo}"
             android:textSize="34sp"
             style="@style/TextAccent"
-            app:layout_constraintBottom_toBottomOf="@+id/musicVideosRv"
-            app:layout_constraintEnd_toEndOf="@+id/musicVideosRv"
-            app:layout_constraintStart_toStartOf="@+id/musicVideosRv"
-            app:layout_constraintTop_toTopOf="@+id/musicVideosRv" />
+            app:layout_constraintBottom_toBottomOf="@+id/musicVideos"
+            app:layout_constraintEnd_toEndOf="@+id/musicVideos"
+            app:layout_constraintStart_toStartOf="@+id/musicVideos"
+            app:layout_constraintTop_toTopOf="@+id/musicVideos" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

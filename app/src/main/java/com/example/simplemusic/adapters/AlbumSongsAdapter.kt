@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.activities.MainActivity
+import com.example.simplemusic.databinding.SongViewholderBinding
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 
 /**
@@ -30,26 +31,20 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
         fun onClickSong(song: AlbumSong)
     }
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val name: TextView = view.findViewById(R.id.nameTv)
-        val container: ConstraintLayout = view.findViewById(R.id.container)
-        val like: ImageButton = view.findViewById(R.id.likeBtn)
-        val play: ImageButton = view.findViewById(R.id.playBtn)
+    class ViewHolder(val binding: SongViewholderBinding) : RecyclerView.ViewHolder(binding.root) {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.song_viewholder, parent, false)
-        return ViewHolder(view)
+        val binding = SongViewholderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val song = songs[position]
 
-        // Like button style
         setLikeButtonStyle(holder)
 
-        // Song name
-        holder.name.text = song.trackName
+        holder.binding.name.text = song.trackName
 
         // Set helper variable. Liked song or not
         if (song.like == null) {
@@ -58,21 +53,19 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
 
         // Set like icon color
         if (song.like!!)
-            holder.like.setColorFilter(ContextCompat.getColor( activity, R.color.primary_dark))
+            holder.binding.like.setColorFilter(ContextCompat.getColor( activity, R.color.primary_dark))
         else
-            holder.like.setColorFilter(ContextCompat.getColor( activity, R.color.white))
+            holder.binding.like.setColorFilter(ContextCompat.getColor( activity, R.color.white))
 
-
-        // Click listeners
-        holder.like.setOnClickListener {
+        holder.binding.like.setOnClickListener {
             actionInterface.onClickLike(song)
         }
 
-        holder.play.setOnClickListener {
+        holder.binding.play.setOnClickListener {
             actionInterface.onClickPlay(song)
         }
 
-        holder.container.setOnClickListener {
+        holder.binding.container.setOnClickListener {
             actionInterface.onClickSong(song)
         }
     }
@@ -95,7 +88,7 @@ class AlbumSongsAdapter(private  var songs: List<AlbumSong>,
     }
 
     private fun setLikeButtonStyle(holder: ViewHolder) {
-        holder.like.setColorFilter(Color.WHITE)
+        holder.binding.like.setColorFilter(Color.WHITE)
     }
 
 }

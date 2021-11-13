@@ -6,7 +6,6 @@ import com.example.simplemusic.models.RepositoryResult
 import com.example.simplemusic.models.RepositoryResult.Success
 import com.example.simplemusic.models.RepositoryResult.Error
 import com.example.simplemusic.models.SearchResponse
-import com.example.simplemusic.utils.WRAPPER_TYPE_ARTIST
 import com.example.simplemusic.utils.WRAPPER_TYPE_COLLECTION
 import com.example.simplemusic.webservices.SongWebService
 import java.lang.Exception
@@ -41,8 +40,6 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
                 songs.removeAt(0)
         }
 
-        //Log.println(Log.ERROR, "DEBUG", "request ${songs.size}")//
-
         // Save to cache with cache info
         saveCache(albumId, pagination, songs)
 
@@ -64,7 +61,6 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
         // so the first one is enough to check
         if (songsCache.isNotEmpty() && limit <= songsCache[0].limit!!) {
             songsCache = apiCacheDao.getAlbumOwnerSongs(albumId, limit)
-            //Log.println(Log.ERROR, "DEBUG", "cache ${songsCache.size}")//
             return songsCache
         }
         return null

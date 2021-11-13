@@ -3,7 +3,7 @@ package com.example.simplemusic.viewmodels
 import android.os.Parcelable
 import androidx.lifecycle.*
 import com.example.simplemusic.models.multimediacontent.AlbumSong
-import com.example.simplemusic.models.UIEvent
+import com.example.simplemusic.utils.UIEvent
 import com.example.simplemusic.models.RepositoryResult
 import com.example.simplemusic.repositories.SongRepository
 import com.example.simplemusic.utils.Event

@@ -7,11 +7,9 @@ import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.example.simplemusic.R
-import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.viewmodels.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.*
 
 
 private const val KEY_CACHE_DATE = "cache_date"

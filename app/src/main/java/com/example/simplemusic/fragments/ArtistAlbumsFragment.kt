@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -18,13 +17,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.adapters.ArtistAlbumsAdapter
 import com.example.simplemusic.databinding.FragmentArtistAlbumsBinding
-import com.example.simplemusic.models.UIEvent
+import com.example.simplemusic.utils.UIEvent
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.SongViewModel
 //import kotlinx.android.synthetic.main.fragment_artist_albums.*
-import kotlinx.coroutines.launch
 
 /**
  * Shows albums from an artist.
@@ -76,7 +74,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         albumListOnEndListener()
 
         // Go to music videos
-        binding.musicVideosBtn.setOnClickListener {
+        binding.musicVideos.setOnClickListener {
             val action = ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToArtistMusicVideosFragment()
             navController.navigate(action)
         }
@@ -87,8 +85,8 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     private fun initEmptyList() {
         albumsAdapter = ArtistAlbumsAdapter(ArrayList(), this)
         linearLayoutManager = LinearLayoutManager(activity)
-        binding.albumRv.layoutManager = linearLayoutManager
-        binding.albumRv.adapter = albumsAdapter
+        binding.albums.layoutManager = linearLayoutManager
+        binding.albums.adapter = albumsAdapter
 
         albumViewModel.albums.value = ArrayList()
     }
@@ -97,7 +95,6 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
         binding.toolbar.setupWithNavController(navHostFragment)
-        // Title
         binding.toolbar.title = albumViewModel.searchedArtist
 
         setHasOptionsMenu(true)
@@ -106,11 +103,10 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
 
     private fun observeAlbums() {
         albumViewModel.albums.observe(viewLifecycleOwner, { albums ->
-            // Update artists data
             albumsAdapter.setAlbums(albums)
 
             // Restore list scroll
-            binding.albumRv.layoutManager?.onRestoreInstanceState(albumViewModel.recyclerViewState)
+            binding.albums.layoutManager?.onRestoreInstanceState(albumViewModel.recyclerViewState)
         })
     }
 
@@ -143,7 +139,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     }
 
     private fun albumListOnEndListener() {
-        binding.albumRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.albums.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
@@ -152,9 +148,8 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
                     if (!albumViewModel.loading.value!!) {
                         // Save list scroll data
                         albumViewModel.recyclerViewState =
-                            (binding.albumRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
+                            (binding.albums.layoutManager as LinearLayoutManager).onSaveInstanceState()
 
-                        // Request more albums data
                         requestAlbums(args.artitstId)
                     }
                 }
@@ -184,12 +179,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
      * Start request to get albums.
      */
     private fun requestAlbums(artistId: Int) {
-        binding.progressBar.visibility = View.VISIBLE
-
-        // Start request
-        lifecycleScope.launch {
-            albumViewModel.searchArtistAlbum(artistId)
-        }
+        albumViewModel.searchArtistAlbum(artistId)
     }
 
     /**

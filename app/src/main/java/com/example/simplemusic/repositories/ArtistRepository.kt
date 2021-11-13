@@ -1,6 +1,5 @@
 package com.example.simplemusic.repositories
 
-import android.util.Log
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.database.dao.SearchDao
@@ -39,7 +38,6 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
 
         // Filter. Only artist
         val artists = ArrayList(searchResponse.results ?: listOf())
-        //Log.println(Log.ERROR, "DEBUG", "request ${artists.size}")//
 
         // Save to cache
         saveCache(term, pagination, artists)
@@ -62,12 +60,10 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
         // Only if it is big enough
         if (search != null && limit <= search.limit) {
             val artistsId = searchDao.getSearchResultsArtistId(search.searchId, limit)
-            //Log.println(Log.ERROR, "DEBUG", "cache ${artistsId.size}")//
 
             val artistsCache = ArrayList<Artist>()
             for (id in artistsId)
                 artistsCache.add(apiCacheDao.getArtist(id))
-            //artistsCache = apiCacheDao.getArtists(artistsId)
             return artistsCache
         }
 

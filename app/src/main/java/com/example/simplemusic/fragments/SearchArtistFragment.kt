@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -18,14 +17,13 @@ import com.example.simplemusic.R
 import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.ArtistAdapter
 import com.example.simplemusic.viewmodels.ArtistViewModel
-import kotlinx.coroutines.launch
 import android.transition.TransitionManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.doAfterTextChanged
 import com.example.simplemusic.databinding.FragmentSearchArtistBinding
-import com.example.simplemusic.models.UIEvent
+import com.example.simplemusic.utils.UIEvent
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
@@ -86,51 +84,48 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
         clearListener()
 
-        // Default user
-        lifecycleScope.launch {
-            userViewModel.setDefaultUser()
-        }
+        userViewModel.setDefaultUser()
     }
 
 
     private fun initView() {
-        artistViewModel.anim = false
+        artistViewModel.animating = false
     }
 
     private fun initEmptyList() {
         artistAdapter = ArtistAdapter(ArrayList(), this)
         linearLayoutManager = LinearLayoutManager(context)
-        binding.artistRv.layoutManager = linearLayoutManager
-        binding.artistRv.adapter = artistAdapter
+        binding.artists.layoutManager = linearLayoutManager
+        binding.artists.adapter = artistAdapter
 
         artistViewModel.artists.value = ArrayList()
     }
 
     private fun searchListener() {
         // Search after each letter
-        binding.searchEt.doAfterTextChanged {
+        binding.searchTerm.doAfterTextChanged {
             resetPagination()
-            requestSearch(binding.searchEt.text.toString())
+            requestSearch(binding.searchTerm.text.toString())
         }
 
         // Search
-        binding.searchBtn.setOnClickListener {
-            if (!artistViewModel.anim) {
+        binding.search.setOnClickListener {
+            if (!artistViewModel.animating) {
                 resetPagination()
                 hideKeyboard()
-                animateButtonPressed(binding.searchBtn)
-                requestSearch(binding.searchEt.text.toString())
+                animateButtonPressed(binding.search)
+                requestSearch(binding.searchTerm.text.toString())
             }
         }
     }
 
     private fun clearListener() {
-        binding.clearBtn.setOnClickListener {
-            if (!artistViewModel.anim) {
+        binding.clear.setOnClickListener {
+            if (!artistViewModel.animating) {
                 resetPagination()
                 hideKeyboard()
-                animateButtonPressed(binding.clearBtn)
-                binding.searchEt.text.clear()
+                animateButtonPressed(binding.clear)
+                binding.searchTerm.text.clear()
             }
         }
     }
@@ -148,7 +143,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      * Set list to top and resets pagination.
      */
     private fun resetPagination() {
-        binding.artistRv.scrollToPosition(0)
+        binding.artists.scrollToPosition(0)
         artistViewModel.resetPagination()
     }
 
@@ -173,6 +168,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      * Start a search with a limit of results
      */
     private fun requestSearch(search: String) {
+        // Binding not working. Progress bar not showing
         binding.progressBar.visibility = View.VISIBLE
         artistViewModel.searchArtist(search)
     }
@@ -205,7 +201,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      * Animate button with zoom
      */
     private fun animateButtonPressed(view: View) {
-        artistViewModel.anim = true
+        artistViewModel.animating = true
         val zoom = 0.1f
         val time: Long = 200
 
@@ -220,7 +216,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
                     .scaleYBy(zoom)
                     .setDuration(time)
                     .withEndAction {
-                        artistViewModel.anim = false
+                        artistViewModel.animating = false
                     }
             }
     }
@@ -231,13 +227,12 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
             binding.progressBar.visibility = View.GONE
 
             // Save list scroll data
-            val scroll = binding.artistRv.layoutManager?.onSaveInstanceState()
+            val scroll = binding.artists.layoutManager?.onSaveInstanceState()
 
-            // Update artists data
             artistAdapter.setArtists(artists)
 
             // Restore list scroll
-            binding.artistRv.layoutManager?.onRestoreInstanceState(scroll)
+            binding.artists.layoutManager?.onRestoreInstanceState(scroll)
 
             // If there are results, the artist list will be at the center
             if (artists.isEmpty()) {
@@ -277,7 +272,7 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
     }
 
     private fun artistListOnEndListener() {
-        binding.artistRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.artists.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
@@ -286,8 +281,6 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
                 // If end of list and there is data to continue
                 if (!recyclerView.canScrollVertically(1) && artistViewModel.canGetMoreData()) {
                     if (!artistViewModel.loading.value!!) {
-
-                        // Request more artists data
                         artistViewModel.searchedArtist?.let { requestSearch(it) }
                     }
                 }

@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
@@ -17,12 +16,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.simplemusic.R
 import com.example.simplemusic.adapters.ArtistMusicVideosAdapter
 import com.example.simplemusic.databinding.FragmentArtistMusicVideosBinding
-import com.example.simplemusic.models.UIEvent
+import com.example.simplemusic.utils.UIEvent
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.MusicVideoViewModel
-import kotlinx.coroutines.launch
 
 /**
  * Shows a music video list. It can play videos.
@@ -59,9 +57,6 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.videoView.visibility = View.GONE
-        binding.closeBtn.visibility = View.GONE
-
         setToolbar()
 
         observeMusicVideos()
@@ -74,11 +69,10 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         albumListOnEndListener()
 
         // Click close button when playing video
-        binding.closeBtn.setOnClickListener {
+        binding.close.setOnClickListener {
             closeVideoPlayer()
         }
 
-        // Start fetching music videos
         albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
     }
 
@@ -86,7 +80,6 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
         binding.toolbar.setupWithNavController( navHostFragment)
-        // Title
         binding.toolbar.title = getString(R.string.music_videos)
 
         setHasOptionsMenu(true)
@@ -113,21 +106,18 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     private fun initEmptyList() {
         musicVideosAdapter = ArtistMusicVideosAdapter(ArrayList(), this)
         linearLayoutManager = LinearLayoutManager(activity)
-        binding.musicVideosRv.layoutManager = linearLayoutManager
-        binding.musicVideosRv.adapter = musicVideosAdapter
+        binding.musicVideos.layoutManager = linearLayoutManager
+        binding.musicVideos.adapter = musicVideosAdapter
 
         musicVideoViewModel.musicVideos.value = ArrayList()
     }
 
     private fun observeMusicVideos() {
         musicVideoViewModel.musicVideos.observe(viewLifecycleOwner, { musicVideos ->
-            // Update artists data
             musicVideosAdapter.setMusicVideos(musicVideos)
 
             // Restore list scroll
-            binding.musicVideosRv.layoutManager?.onRestoreInstanceState(musicVideoViewModel.recyclerViewState)
-
-            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+            binding.musicVideos.layoutManager?.onRestoreInstanceState(musicVideoViewModel.recyclerViewState)
         })
     }
 
@@ -160,7 +150,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     }
 
     private fun albumListOnEndListener() {
-        binding.musicVideosRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.musicVideos.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
@@ -168,9 +158,8 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
                 if (!recyclerView.canScrollVertically(1) && musicVideoViewModel.canGetMoreData()) {
                     if (!musicVideoViewModel.loading.value!!) {
                         // Save list scroll data
-                        musicVideoViewModel.recyclerViewState = (binding.musicVideosRv.layoutManager as LinearLayoutManager).onSaveInstanceState()
+                        musicVideoViewModel.recyclerViewState = (binding.musicVideos.layoutManager as LinearLayoutManager).onSaveInstanceState()
 
-                        // Request more albums data
                         albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
                     }
                 }
@@ -219,28 +208,27 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
 
         // Build player
         val uri = Uri.parse(musicVideo.previewUrl)
-        binding.videoView.setMediaController(MediaController(context))
-        binding.videoView.setVideoURI(uri)
-        binding.videoView.requestFocus()
+        binding.video.setMediaController(MediaController(context))
+        binding.video.setVideoURI(uri)
+        binding.video.requestFocus()
 
         // Listeners
-        binding.videoView.setOnPreparedListener {
-            binding.progressBar.visibility = View.GONE
+        binding.video.setOnPreparedListener {
+            musicVideoViewModel.setLoading(false)
         }
-        binding.videoView.setOnCompletionListener {
+        binding.video.setOnCompletionListener {
             closeVideoPlayer()
         }
 
-        // Start
-        binding.videoView.start()
+        binding.video.start()
     }
 
     /**
      * Stop video and close player.
      */
     private fun closeVideoPlayer() {
-        if (binding.videoView.isPlaying)
-            binding.videoView.stopPlayback()
+        if (binding.video.isPlaying)
+            binding.video.stopPlayback()
 
         musicVideoViewModel.setShowVideoPlayer(false)
     }
@@ -258,6 +246,4 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
                 }
             }
     }
-
-
 }

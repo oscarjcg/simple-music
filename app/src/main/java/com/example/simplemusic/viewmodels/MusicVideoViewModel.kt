@@ -5,8 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.simplemusic.models.RepositoryResult
-import com.example.simplemusic.models.UIEvent
-import com.example.simplemusic.models.multimediacontent.AlbumSong
+import com.example.simplemusic.utils.UIEvent
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.repositories.MusicVideoRepository
 import com.example.simplemusic.utils.Event

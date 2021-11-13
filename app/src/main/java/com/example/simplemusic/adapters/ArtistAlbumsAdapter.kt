@@ -6,12 +6,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.simplemusic.R
-import com.example.simplemusic.fragments.ArtistAlbumsFragmentDirections
-import com.example.simplemusic.models.multimediacontent.Artist
+import com.example.simplemusic.databinding.AlbumViewholderBinding
 import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,40 +26,29 @@ class ArtistAlbumsAdapter(private var albums: List<ArtistAlbum>,
         fun onClickAlbum(album: ArtistAlbum)
     }
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val nameTv: TextView = view.findViewById(R.id.nameTv)
-        val container: ConstraintLayout = view.findViewById(R.id.container)
-        val artworkIv: ImageView = view.findViewById(R.id.artworkIv)
-        val dateTv: TextView = view.findViewById(R.id.dateTv)
-        val tracksTv: TextView = view.findViewById(R.id.tracksTv)
+    class ViewHolder(val binding: AlbumViewholderBinding) : RecyclerView.ViewHolder(binding.root) {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.album_viewholder, parent, false)
-        return ViewHolder(view)
+        val binding = AlbumViewholderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val album = albums[position]
 
-        // Album name
-        holder.nameTv.text = album.collectionName
+        holder.binding.name.text = album.collectionName
 
-        // Album release date
         val simpleDateFormat = SimpleDateFormat(RELEASE_DATE_FORMAT, Locale.ENGLISH)
-        holder.dateTv.text = simpleDateFormat.format(album.releaseDate)
+        holder.binding.date.text = simpleDateFormat.format(album.releaseDate)
 
-        // Album tracks
-        holder.tracksTv.text = album.trackCount.toString()
+        holder.binding.tracks.text = album.trackCount.toString()
 
-        // Artwork image
-        Glide.with(holder.artworkIv)
+        Glide.with(holder.binding.artwork)
             .load(album.artworkUrl100)
-            .into(holder.artworkIv)
+            .into(holder.binding.artwork)
 
-
-        // Click listener
-        holder.container.setOnClickListener {
+        holder.binding.container.setOnClickListener {
             actionInterface.onClickAlbum(album)
         }
     }

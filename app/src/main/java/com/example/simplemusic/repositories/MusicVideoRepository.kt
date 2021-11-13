@@ -1,6 +1,5 @@
 package com.example.simplemusic.repositories
 
-import android.util.Log
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.database.dao.ApiCacheDao
 import com.example.simplemusic.models.RepositoryResult
@@ -35,7 +34,6 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
 
         // Filter. Only artist
         val musicVideos = ArrayList(searchResponse.results ?: listOf())
-        //Log.println(Log.ERROR, "DEBUG", "request ${musicVideos.size}")//
 
         // Save to cache with cache info
         saveCache(term, pagination, musicVideos)
@@ -58,7 +56,6 @@ class MusicVideoRepository(private val apiCacheDao: ApiCacheDao,
         // so the first one is enough to check
         if (musicVideosCache.isNotEmpty() && limit <= musicVideosCache[0].limit!!) {
             musicVideosCache = apiCacheDao.getArtistOwnerMusicVideos(term, limit)
-            //Log.println(Log.ERROR, "DEBUG", "cache ${musicVideosCache.size}")//
             return musicVideosCache
         }
         return null

@@ -28,13 +28,14 @@ class UserViewModel
     /**
      * Add a default user if none created. Or finds a default user.
      */
-    suspend fun setDefaultUser() {
-        val users = userRepository.getUsers()
-        if (users.isEmpty())
-            userRepository.addUser(User(DEFAULT_USER_NAME))
+    fun setDefaultUser() {
+        viewModelScope.launch {
+            val users = userRepository.getUsers()
+            if (users.isEmpty())
+                userRepository.addUser(User(DEFAULT_USER_NAME))
 
-        user.value = userRepository.findUserByName(DEFAULT_USER_NAME)
-
+            user.value = userRepository.findUserByName(DEFAULT_USER_NAME)
+        }
     }
 
     fun userLikesTrack(song: AlbumSong) {

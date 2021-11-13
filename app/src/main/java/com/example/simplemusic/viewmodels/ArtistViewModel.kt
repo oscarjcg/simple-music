@@ -4,11 +4,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.simplemusic.models.RepositoryResult
-import com.example.simplemusic.models.UIEvent
+import com.example.simplemusic.utils.UIEvent
 import com.example.simplemusic.models.multimediacontent.Artist
 import com.example.simplemusic.repositories.ArtistRepository
 import com.example.simplemusic.utils.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import javax.inject.Inject
@@ -16,6 +18,9 @@ import javax.inject.Inject
 /**
  * View model for artists.
  */
+
+private const val DEBOUNCE_SEARCH_TIME = 300L
+
 @HiltViewModel
 class ArtistViewModel
     @Inject
@@ -26,11 +31,12 @@ class ArtistViewModel
 
     // UI
     var searchedArtist: String? = null
-    val loading = MutableLiveData(true)
+    val loading = MutableLiveData(false)
     val showStateInfo = MutableLiveData(false)
     val stateInfo = MutableLiveData<String>()
     val uiState = MutableLiveData<Event<UIEvent<Nothing>>>()
-    var anim = false
+    var animating = false
+    private var searchJob: Job? = null
 
     fun setLoading(loading: Boolean) {
         this.loading.value = loading
@@ -42,11 +48,13 @@ class ArtistViewModel
     }
 
     fun searchArtist(term: String) {
+        searchJob?.cancel()
         searchedArtist = term
         setLoading(true)
         setStateInfo(false)
 
-        viewModelScope.launch {
+        searchJob = viewModelScope.launch {
+            delay(DEBOUNCE_SEARCH_TIME)
             val repositoryResult = artistRepository.getArtists(term)
             setLoading(false)
 

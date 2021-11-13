@@ -40,7 +40,7 @@
         </androidx.appcompat.widget.Toolbar>
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/background"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
@@ -61,7 +61,7 @@
             app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
             <ImageButton
-                android:id="@+id/searchBtn"
+                android:id="@+id/search"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
@@ -71,7 +71,7 @@
                 android:src="@drawable/ic_search" />
 
             <EditText
-                android:id="@+id/searchEt"
+                android:id="@+id/searchTerm"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -85,7 +85,7 @@
                 android:textColorHint="@color/white" />
 
             <ImageButton
-                android:id="@+id/clearBtn"
+                android:id="@+id/clear"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
@@ -97,7 +97,7 @@
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/artistRv"
+            android:id="@+id/artists"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="8dp"
@@ -116,22 +116,22 @@
             android:layout_height="100dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/artistRv"
-            app:layout_constraintEnd_toEndOf="@+id/artistRv"
-            app:layout_constraintStart_toStartOf="@+id/artistRv"
-            app:layout_constraintTop_toTopOf="@+id/artistRv" />
+            app:layout_constraintBottom_toBottomOf="@+id/artists"
+            app:layout_constraintEnd_toEndOf="@+id/artists"
+            app:layout_constraintStart_toStartOf="@+id/artists"
+            app:layout_constraintTop_toTopOf="@+id/artists" />
 
         <TextView
-            android:id="@+id/stateTv"
+            android:id="@+id/stateInfo"
             style="@style/TextAccent"
             android:visibility="@{viewModel.showStateInfo? View.VISIBLE : View.GONE}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{viewModel.stateInfo}"
             android:textSize="34sp"
-            app:layout_constraintBottom_toBottomOf="@+id/artistRv"
-            app:layout_constraintEnd_toEndOf="@+id/artistRv"
-            app:layout_constraintStart_toStartOf="@+id/artistRv"
-            app:layout_constraintTop_toTopOf="@+id/artistRv" />
+            app:layout_constraintBottom_toBottomOf="@+id/artists"
+            app:layout_constraintEnd_toEndOf="@+id/artists"
+            app:layout_constraintStart_toStartOf="@+id/artists"
+            app:layout_constraintTop_toTopOf="@+id/artists" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

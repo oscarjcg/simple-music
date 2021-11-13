@@ -21,7 +21,7 @@ import com.example.simplemusic.R
 import com.example.simplemusic.activities.MainActivity
 import com.example.simplemusic.adapters.AlbumSongsAdapter
 import com.example.simplemusic.databinding.FragmentAlbumSongsBinding
-import com.example.simplemusic.models.UIEvent
+import com.example.simplemusic.utils.UIEvent
 import com.example.simplemusic.models.multimediacontent.AlbumSong
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
@@ -88,7 +88,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         loadLikes()
 
         // Click pause button. Stop playing song
-        binding.pauseBtn.setOnClickListener {
+        binding.pause.setOnClickListener {
             releasePlayer()
         }
 
@@ -102,8 +102,8 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             gridLayoutManager = GridLayoutManager(activity, GRID_SIZE_PORTRAIT)
         else
             gridLayoutManager = GridLayoutManager(activity, GRID_SIZE_LANDSCAPE)
-        binding.songRv.layoutManager = gridLayoutManager
-        binding.songRv.adapter = songsAdapter
+        binding.songs.layoutManager = gridLayoutManager
+        binding.songs.adapter = songsAdapter
 
         songViewModel.songs.value = ArrayList()
     }
@@ -149,13 +149,10 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
 
     private fun observeSongs() {
         songViewModel.songs.observe(viewLifecycleOwner, { songs ->
-            // Update songs data
             songsAdapter.setSongs(songs)
 
             // Restore list scroll
-            binding.songRv.layoutManager?.onRestoreInstanceState(songViewModel.recyclerViewState)
-
-            //Log.println(Log.ERROR, "DEBUG", "request $pagination")//
+            binding.songs.layoutManager?.onRestoreInstanceState(songViewModel.recyclerViewState)
         })
 
         userViewModel.likedTracksId.observe(viewLifecycleOwner, { liked ->
@@ -192,7 +189,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     }
 
     private fun songListOnEndListener() {
-        binding.songRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.songs.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
@@ -201,9 +198,8 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
                     if (!songViewModel.loading.value!!) {
                         // Save list scroll data
                         songViewModel.recyclerViewState =
-                            (binding.songRv.layoutManager as GridLayoutManager).onSaveInstanceState()
+                            (binding.songs.layoutManager as GridLayoutManager).onSaveInstanceState()
 
-                        // Request more songs data
                         requestSongs(args.albumId)
                     }
                 }
@@ -285,14 +281,12 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
      * Stops media player by releasing it.
      */
     private fun releasePlayer() {
-        // Release audio player
         mediaPlayer?.release()
         mediaPlayer = null
         songViewModel.setPlayingSong(false)
     }
 
     override fun onPause() {
-        // Release audio player
         releasePlayer()
 
         super.onPause()
