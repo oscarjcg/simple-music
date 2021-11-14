@@ -47,4 +47,8 @@ data class ArtistAlbum(
 
     @SerializedName("_order")
     var order: Int? = null,
+
+    @SerializedName("_cacheDate")
+    @Expose
+    var cacheDate: Date? = null,
     ) : MultimediaContent()

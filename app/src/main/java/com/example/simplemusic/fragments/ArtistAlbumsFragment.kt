@@ -22,7 +22,6 @@ import com.example.simplemusic.models.multimediacontent.ArtistAlbum
 import com.example.simplemusic.utils.Connectivity
 import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.SongViewModel
-//import kotlinx.android.synthetic.main.fragment_artist_albums.*
 
 /**
  * Shows albums from an artist.
@@ -35,7 +34,6 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
     private lateinit var binding: FragmentArtistAlbumsBinding
     private val args: ArtistAlbumsFragmentArgs by navArgs()
     private val albumViewModel: AlbumViewModel by activityViewModels()
-    private val songViewModel: SongViewModel by activityViewModels()
     private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,11 +73,12 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
 
         // Go to music videos
         binding.musicVideos.setOnClickListener {
-            val action = ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToArtistMusicVideosFragment()
+            val action = ArtistAlbumsFragmentDirections
+                .actionArtistAlbumsFragmentToArtistMusicVideosFragment(args.artistName)
             navController.navigate(action)
         }
 
-        requestAlbums(args.artitstId)
+        requestAlbums(args.artistId)
     }
 
     private fun initEmptyList() {
@@ -95,7 +94,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
         // Toolbar
         val navHostFragment = NavHostFragment.findNavController(this)
         binding.toolbar.setupWithNavController(navHostFragment)
-        binding.toolbar.title = albumViewModel.searchedArtist
+        binding.toolbar.title = args.artistName
 
         setHasOptionsMenu(true)
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
@@ -150,7 +149,7 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
                         albumViewModel.recyclerViewState =
                             (binding.albums.layoutManager as LinearLayoutManager).onSaveInstanceState()
 
-                        requestAlbums(args.artitstId)
+                        requestAlbums(args.artistId)
                     }
                 }
             }
@@ -191,16 +190,16 @@ class ArtistAlbumsFragment : Fragment(), ArtistAlbumsAdapter.ActionInterface {
             // Share artist and album
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, albumViewModel.searchedArtist + " - " + album.collectionName)
+                putExtra(Intent.EXTRA_TEXT, args.artistName + " - " + album.collectionName)
                 type = "text/plain"
             }
 
-            val shareIntent = Intent.createChooser(sendIntent, albumViewModel.searchedArtist + " - " + album.collectionName)
+            val shareIntent = Intent.createChooser(sendIntent, args.artistName + " - " + album.collectionName)
             startActivity(shareIntent)
         } else {
-            songViewModel.selectedAlbum = album.collectionName
             val action =
-                ArtistAlbumsFragmentDirections.actionArtistAlbumsFragmentToAlbumSongsFragment(album.collectionId!!)
+                ArtistAlbumsFragmentDirections
+                    .actionArtistAlbumsFragmentToAlbumSongsFragment(album.collectionId!!, album.collectionName!!, args.artistName)
             navController.navigate(action)
         }
     }

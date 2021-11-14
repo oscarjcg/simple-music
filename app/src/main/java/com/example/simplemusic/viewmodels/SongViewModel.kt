@@ -29,9 +29,6 @@ class SongViewModel
 
     var waitShare = false
 
-    // UI
-    var selectedAlbum: String? = null
-
     val loading = MutableLiveData(false)
     val playingSong = MutableLiveData(false)
     val playingSongName = MutableLiveData<String>()
@@ -90,10 +87,6 @@ class SongViewModel
                 uiState.value = Event(UIEvent.EmptyList)
             }
         }
-    }
-
-    suspend fun deleteAll() {
-        songRepository.deleteAll()
     }
 
     fun resetPagination() {

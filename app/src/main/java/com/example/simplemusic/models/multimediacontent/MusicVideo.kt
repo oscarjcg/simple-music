@@ -41,4 +41,8 @@ class MusicVideo (
 
     @SerializedName("_order")
     var order: Int? = null,
+
+    @SerializedName("_cacheDate")
+    @Expose
+    var cacheDate: Date? = null,
 ): MultimediaContent()

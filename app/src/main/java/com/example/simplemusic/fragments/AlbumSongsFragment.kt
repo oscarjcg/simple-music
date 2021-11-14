@@ -43,7 +43,6 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
     private val args: AlbumSongsFragmentArgs by navArgs()
     private lateinit var navController: NavController
     private val songViewModel: SongViewModel by activityViewModels()
-    private val albumViewModel: AlbumViewModel by activityViewModels()
     private val userViewModel: UserViewModel by activityViewModels()
 
 
@@ -113,7 +112,7 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
         val navHostFragment = NavHostFragment.findNavController(this)
         binding.toolbar.setupWithNavController( navHostFragment)
         // Title
-        binding.toolbar.title = songViewModel.selectedAlbum
+        binding.toolbar.title = args.albumName
 
         setHasOptionsMenu(true)
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
@@ -268,11 +267,11 @@ class AlbumSongsFragment : Fragment(), AlbumSongsAdapter.ActionInterface {
             // Share artist and song
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, albumViewModel.searchedArtist + " - " + song.trackName)
+                putExtra(Intent.EXTRA_TEXT, args.albumName + " - " + song.trackName)
                 type = "text/plain"
             }
 
-            val shareIntent = Intent.createChooser(sendIntent, albumViewModel.searchedArtist + " - " + song.trackName)
+            val shareIntent = Intent.createChooser(sendIntent, args.artistName + " - " + song.trackName)
             startActivity(shareIntent)
         }
     }

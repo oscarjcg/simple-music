@@ -29,7 +29,6 @@ class ArtistViewModel
     ) : ViewModel() {
     val artists = MutableLiveData<List<Artist>>()
 
-    // UI
     var searchedArtist: String? = null
     val loading = MutableLiveData(false)
     val showStateInfo = MutableLiveData(false)
@@ -87,11 +86,6 @@ class ArtistViewModel
                 uiState.value = Event(UIEvent.EmptyList)
             }
         }
-    }
-
-    suspend fun deleteAll() {
-        artistRepository.deleteAll()
-        artistRepository.deleteAllSearch()
     }
 
     fun resetPagination() {

@@ -19,7 +19,6 @@ import com.example.simplemusic.databinding.FragmentArtistMusicVideosBinding
 import com.example.simplemusic.utils.UIEvent
 import com.example.simplemusic.models.multimediacontent.MusicVideo
 import com.example.simplemusic.utils.Connectivity
-import com.example.simplemusic.viewmodels.AlbumViewModel
 import com.example.simplemusic.viewmodels.MusicVideoViewModel
 
 /**
@@ -30,9 +29,8 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
     private lateinit var linearLayoutManager: LinearLayoutManager
 
     private lateinit var binding: FragmentArtistMusicVideosBinding
-    private val albumViewModel: AlbumViewModel by activityViewModels()
     private val musicVideoViewModel: MusicVideoViewModel by activityViewModels()
-    private val args: ArtistAlbumsFragmentArgs by navArgs()
+    private val args: ArtistMusicVideosFragmentArgs by navArgs()
     private lateinit var musicVideosAdapter: ArtistMusicVideosAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +71,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
             closeVideoPlayer()
         }
 
-        albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
+        requestMusicVideos(args.artistName)
     }
 
     private fun setToolbar() {
@@ -160,7 +158,7 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
                         // Save list scroll data
                         musicVideoViewModel.recyclerViewState = (binding.musicVideos.layoutManager as LinearLayoutManager).onSaveInstanceState()
 
-                        albumViewModel.searchedArtist?.let { requestMusicVideos(it) }
+                        requestMusicVideos(args.artistName)
                     }
                 }
             }
@@ -180,11 +178,11 @@ class ArtistMusicVideosFragment : Fragment(), ArtistMusicVideosAdapter.ActionInt
             // Share artist and music video
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, albumViewModel.searchedArtist + " - " + musicVideo.trackName)
+                putExtra(Intent.EXTRA_TEXT, args.artistName + " - " + musicVideo.trackName)
                 type = "text/plain"
             }
 
-            val shareIntent = Intent.createChooser(sendIntent, albumViewModel.searchedArtist + " - " + musicVideo.trackName)
+            val shareIntent = Intent.createChooser(sendIntent, args.artistName + " - " + musicVideo.trackName)
             startActivity(shareIntent)
         }
     }

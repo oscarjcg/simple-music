@@ -90,10 +90,6 @@ class MusicVideoViewModel
         }
     }
 
-    suspend fun deleteAll() {
-        musicVideoRepository.deleteAll()
-    }
-
     fun resetPagination() {
         musicVideoRepository.resetPagination()
         recyclerViewState = null

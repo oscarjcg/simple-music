@@ -5,6 +5,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import java.util.*
 
 /**
  * Song data structure.
@@ -37,4 +38,8 @@ data class AlbumSong(
     @SerializedName("_order")
     var order: Int? = null,
 
-): MultimediaContent()
+    @SerializedName("_cacheDate")
+    @Expose
+    var cacheDate: Date? = null,
+
+    ): MultimediaContent()

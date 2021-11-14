@@ -6,9 +6,13 @@ import com.example.simplemusic.models.RepositoryResult
 import com.example.simplemusic.models.RepositoryResult.Success
 import com.example.simplemusic.models.RepositoryResult.Error
 import com.example.simplemusic.models.SearchResponse
+import com.example.simplemusic.utils.CACHE_INTERVAL_DAYS
+import com.example.simplemusic.utils.DAY_MS
 import com.example.simplemusic.utils.WRAPPER_TYPE_COLLECTION
 import com.example.simplemusic.webservices.SongWebService
 import java.lang.Exception
+import java.util.*
+import kotlin.collections.ArrayList
 
 private const val PAGINATION = 20
 
@@ -60,10 +64,20 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
         // Only if it is big enough. All songs have the same limit and owner
         // so the first one is enough to check
         if (songsCache.isNotEmpty() && limit <= songsCache[0].limit!!) {
-            songsCache = apiCacheDao.getAlbumOwnerSongs(albumId, limit)
-            return songsCache
+            if (isCacheValid(songsCache[0].cacheDate!!.time)) {
+                songsCache = apiCacheDao.getAlbumOwnerSongs(albumId, limit)
+                return songsCache
+            } else {
+                deleteAll()
+            }
         }
         return null
+    }
+
+    private fun isCacheValid(cacheTime: Long): Boolean {
+        val now = System.currentTimeMillis()
+        val cacheDateExpiration = cacheTime + (CACHE_INTERVAL_DAYS * DAY_MS)
+        return now < cacheDateExpiration
     }
 
     private suspend fun saveCache(albumId: Long, limit: Int, songs: List<AlbumSong>) {
@@ -74,6 +88,7 @@ class SongRepository(private val apiCacheDao: ApiCacheDao,
             song.order = i
             // This is because a song can be a collaboration, so the artist id could be different
             song.collectionIdOwner = albumId
+            song.cacheDate = Date()
         }
         apiCacheDao.addAllSongs(songs)
     }

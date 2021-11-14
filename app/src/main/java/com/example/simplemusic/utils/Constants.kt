@@ -14,3 +14,6 @@ const val PARAM_SORT_RECENT = "recent"
 const val WRAPPER_TYPE_ARTIST = "artist"
 const val WRAPPER_TYPE_COLLECTION = "collection"
 const val WRAPPER_TYPE_TRACK = "track"
+
+const val CACHE_INTERVAL_DAYS = 7
+const val DAY_MS: Long = 86400000

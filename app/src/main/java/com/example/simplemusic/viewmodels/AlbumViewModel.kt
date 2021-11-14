@@ -30,8 +30,6 @@ class AlbumViewModel
 
     var waitShare = false
 
-    // UI
-    var searchedArtist: String? = null
     val loading = MutableLiveData(false)
     val showStateInfo = MutableLiveData(false)
     val stateInfo = MutableLiveData<String>()
@@ -84,9 +82,6 @@ class AlbumViewModel
                 uiState.value = Event(UIEvent.EmptyList)
             }
         }
-    }
-    suspend fun deleteAll() {
-        albumRepository.deleteAll()
     }
 
     fun resetPagination() {

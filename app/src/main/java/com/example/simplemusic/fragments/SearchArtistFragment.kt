@@ -39,7 +39,6 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
 
     private lateinit var binding: FragmentSearchArtistBinding
     private val artistViewModel: ArtistViewModel by activityViewModels()
-    private val albumViewModel: AlbumViewModel by activityViewModels()
     private val userViewModel: UserViewModel by activityViewModels() // Just init for default user
     private lateinit var navController: NavController
 
@@ -293,10 +292,9 @@ class SearchArtistFragment : Fragment(), ArtistAdapter.ActionInterface {
      */
     override fun onClickArtist(artist: Artist) {
         hideKeyboard()
-        // Pass artist name
-        albumViewModel.searchedArtist = artist.artistName
         // Go to albums
-        val action =  SearchArtistFragmentDirections.actionSearchArtistFragmentToArtistAlbumsFragment(artist.artistId!!)
+        val action =  SearchArtistFragmentDirections
+            .actionSearchArtistFragmentToArtistAlbumsFragment(artist.artistId!!, artist.artistName!!)
         navController.navigate(action)
     }
 

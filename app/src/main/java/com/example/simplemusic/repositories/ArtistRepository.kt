@@ -9,8 +9,12 @@ import com.example.simplemusic.models.RepositoryResult.Error
 import com.example.simplemusic.models.SearchResponse
 import com.example.simplemusic.models.stored.search.Search
 import com.example.simplemusic.models.stored.search.SearchResultArtist
+import com.example.simplemusic.utils.CACHE_INTERVAL_DAYS
+import com.example.simplemusic.utils.DAY_MS
 import com.example.simplemusic.webservices.SearchWebService
 import java.lang.Exception
+import java.util.*
+import kotlin.collections.ArrayList
 
 private const val PAGINATION = 20
 
@@ -59,15 +63,26 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
 
         // Only if it is big enough
         if (search != null && limit <= search.limit) {
-            val artistsId = searchDao.getSearchResultsArtistId(search.searchId, limit)
+            if (isCacheValid(search.cacheDate!!.time)) {
+                val artistsId = searchDao.getSearchResultsArtistId(search.searchId, limit)
 
-            val artistsCache = ArrayList<Artist>()
-            for (id in artistsId)
-                artistsCache.add(apiCacheDao.getArtist(id))
-            return artistsCache
+                val artistsCache = ArrayList<Artist>()
+                for (id in artistsId)
+                    artistsCache.add(apiCacheDao.getArtist(id))
+                return artistsCache
+            } else {
+                deleteAll()
+                deleteAllSearch()
+            }
         }
 
         return null
+    }
+
+    private fun isCacheValid(cacheTime: Long): Boolean {
+        val now = System.currentTimeMillis()
+        val cacheDateExpiration = cacheTime + (CACHE_INTERVAL_DAYS * DAY_MS)
+        return now < cacheDateExpiration
     }
 
     private suspend fun saveCache(term: String, limit: Int, artists: List<Artist>) {
@@ -77,10 +92,11 @@ class ArtistRepository(private val apiCacheDao: ApiCacheDao,
         val searchId: Long
         if (search != null) {
             search.limit = limit
+            search.cacheDate = Date()
             searchDao.updateSearch(search)
             searchId = search.searchId
         } else {
-            search = Search(term, limit)
+            search = Search(term, limit, Date())
             searchId = searchDao.addSearch(search)
         }
 
